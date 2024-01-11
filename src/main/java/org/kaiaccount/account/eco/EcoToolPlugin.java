@@ -65,7 +65,7 @@ public class EcoToolPlugin extends JavaPlugin {
         registerCommand("pay", BukkitCommands.PAY);
         registerCommand("bank", BukkitCommands.BANK);
         registerCommand("account", BukkitCommands.ACCOUNT);
-
+        registerCommand("transactions", BukkitCommands.TRANSACTIONS);
 
         Collection<RegisteredServiceProvider<Economy>> rsp = getServer().getServicesManager().getRegistrations(Economy.class);
         getLogger().warning("Economy found: " + rsp.size());
