@@ -16,6 +16,7 @@ import org.mose.command.context.ArgumentContext;
 import org.mose.command.context.CommandContext;
 import org.mose.command.exception.ArgumentException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 

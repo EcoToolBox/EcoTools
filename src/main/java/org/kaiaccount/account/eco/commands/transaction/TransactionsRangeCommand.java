@@ -11,12 +11,14 @@ import org.kaiaccount.account.inter.type.player.PlayerAccount;
 import org.mose.command.ArgumentCommand;
 import org.mose.command.CommandArgument;
 import org.mose.command.CommandArgumentResult;
+import org.mose.command.ParseCommandArgument;
 import org.mose.command.arguments.collection.source.UserArgument;
 import org.mose.command.arguments.operation.OptionalArgument;
 import org.mose.command.arguments.operation.permission.PermissionOrArgument;
+import org.mose.command.context.ArgumentContext;
 import org.mose.command.context.CommandContext;
+import org.mose.command.exception.ArgumentException;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -24,17 +26,19 @@ import java.util.Optional;
 
 public class TransactionsRangeCommand implements ArgumentCommand {
 
-    private final CommandArgument<OfflinePlayer> player = new OptionalArgument<OfflinePlayer>(
+    private final CommandArgument<OfflinePlayer> player = new OptionalArgument<>(
             new PermissionOrArgument<>(
                     "user",
                     source -> source.hasPermission(Permissions.HISTORY_OTHER.getPermissionNode()),
-                    new UserArgument("user", u -> true)),
-            (cmdContext, argContext) -> {
-                if (cmdContext.getSource() instanceof OfflinePlayer user) {
-                    return CommandArgumentResult.from(argContext, 0, user);
-                }
-                throw new IOException("Player needs to be specified");
-            });
+                    new UserArgument("user", u -> true)), new ParseCommandArgument<>() {
+        @Override
+        public @NotNull CommandArgumentResult<OfflinePlayer> parse(@NotNull CommandContext context, @NotNull ArgumentContext argument) throws ArgumentException {
+            if (context.getSource() instanceof OfflinePlayer user) {
+                return CommandArgumentResult.from(argument, 0, user);
+            }
+            throw new ArgumentException("Player needs to be specified");
+        }
+    });
     private final CommandArgument<LocalDateTime> startDate = new DateTimeArgument("start", (cmdContext, argContext) -> {
         OfflinePlayer user = cmdContext.getArgument(TransactionsRangeCommand.this, player);
         PlayerAccount<? extends PlayerAccount<?>> playerAccount = AccountInterface.getManager().getPlayerAccount(user);
@@ -89,7 +93,7 @@ public class TransactionsRangeCommand implements ArgumentCommand {
 
         LocalDateTime min = commandContext.getArgument(this, startDate);
 
-        var result = ecoAccount.getTransactionHistory().getBetween(min, LocalDateTime.now());
+        List<EntryTransactionHistory> result = ecoAccount.getTransactionHistory().getBetween(min, LocalDateTime.now());
         commandContext.getSource().sendMessage(result.size() + " transactions");
         return true;
     }
