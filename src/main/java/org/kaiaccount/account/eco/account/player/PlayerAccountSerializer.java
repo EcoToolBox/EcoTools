@@ -99,7 +99,7 @@ public class PlayerAccountSerializer implements Serializer<EcoPlayerAccount> {
             int seconds = configuration.getInt(initialKey + ".time.seconds");
 
             //This is horrible.... Why hasn't Spigot allowed predefined parsers yet?
-            Logger logger = EcoToolPlugin.getPlugin().getLogger();
+            Logger logger = EcoToolPlugin.getInstance().getLogger();
             String prefixErrorMessage = "Could not load player transaction from '" + player.getName() + "'-" + index + ": ";
             LocalDateTime time = LocalDateTime.of(year, month, day, hours, minutes, seconds);
 

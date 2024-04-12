@@ -29,7 +29,7 @@ public class EcoManager implements AccountInterfaceManager {
 
     @Override
     public @NotNull EcoToolPlugin getVaultPlugin() {
-        return EcoToolPlugin.getPlugin();
+        return EcoToolPlugin.getInstance();
     }
 
     @Override
@@ -84,7 +84,7 @@ public class EcoManager implements AccountInterfaceManager {
     public @NotNull PlayerAccount loadPlayerAccount(@NotNull OfflinePlayer player) {
         PlayerAccount account;
         try {
-            account = EcoToolPlugin.getPlugin().loadPlayerAccount(player.getUniqueId());
+            account = EcoToolPlugin.getInstance().loadPlayerAccount(player.getUniqueId());
         } catch (IllegalStateException e) {
             account = new EcoPlayerAccount(new PlayerAccountBuilder().setPlayer(player));
         }

@@ -47,7 +47,7 @@ public class InfoCommand implements ArgumentCommand {
         RegisteredListener[] transactionCompletedHooks =
                 TransactionCompletedEvent.getHandlerList().getRegisteredListeners();
         sender.sendMessage("|===|Info|===|");
-        sender.sendMessage("Version: " + EcoToolPlugin.getPlugin().getDescription().getVersion());
+        sender.sendMessage("Version: " + EcoToolPlugin.getInstance().getDescription().getVersion());
         sender.sendMessage("Vault service enabled: " + Bukkit.getServicesManager().isProvidedFor(Economy.class));
         sender.sendMessage("Currencies: " + currencies.size());
         if (!(sender instanceof Player)) {

@@ -23,6 +23,8 @@ public interface EntryTransactionHistory extends Comparable<EntryTransactionHist
 
     Optional<String> getFromName();
 
+    Optional<String> getToName();
+
     Optional<String> getReason();
 
     TransactionType getTransactionType();

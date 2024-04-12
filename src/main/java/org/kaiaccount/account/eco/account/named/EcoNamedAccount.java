@@ -36,7 +36,7 @@ public class EcoNamedAccount extends AbstractNamedAccount implements Serializabl
 
     @Override
     public @NotNull File getFile() {
-        return new File("plugins/eco/named/" + EcoToolPlugin.getPlugin().getName() + "/" + this.getAccountName() + ".yml");
+        return new File("plugins/eco/named/" + EcoToolPlugin.getInstance().getName() + "/" + this.getAccountName() + ".yml");
     }
 
     @NotNull

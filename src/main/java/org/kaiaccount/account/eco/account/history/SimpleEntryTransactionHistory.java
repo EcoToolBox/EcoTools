@@ -19,6 +19,7 @@ public class SimpleEntryTransactionHistory implements EntryTransactionHistory {
     private final @NotNull TransactionType type;
     private final @NotNull LocalDateTime time;
     private final @Nullable String fromName;
+    private final @Nullable String toName;
     private final @Nullable String reason;
 
     SimpleEntryTransactionHistory(@NotNull EntryTransactionHistoryBuilder builder) {
@@ -29,6 +30,7 @@ public class SimpleEntryTransactionHistory implements EntryTransactionHistory {
         this.type = Objects.requireNonNull(builder.getType(), "Transaction type is missing");
         this.time = Objects.requireNonNull(builder.getTime(), "Time is missing");
         this.fromName = builder.getFromName();
+        this.toName = builder.getToName();
         this.reason = builder.getReason();
     }
 
@@ -55,6 +57,11 @@ public class SimpleEntryTransactionHistory implements EntryTransactionHistory {
     @Override
     public Optional<String> getFromName() {
         return Optional.ofNullable(this.fromName);
+    }
+
+    @Override
+    public Optional<String> getToName() {
+        return Optional.ofNullable(this.toName);
     }
 
     @Override

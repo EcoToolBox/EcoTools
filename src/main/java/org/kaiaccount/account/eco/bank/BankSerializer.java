@@ -64,7 +64,7 @@ public class BankSerializer implements Serializer<EcoBankAccount> {
                 try {
                     uuid = UUID.fromString(accountIdString);
                 } catch (NumberFormatException e) {
-                    EcoToolPlugin.getPlugin()
+                    EcoToolPlugin.getInstance()
                             .getLogger()
                             .warning("Cannot read account accessor's UUID of '"
                                     + accountIdString
@@ -85,7 +85,7 @@ public class BankSerializer implements Serializer<EcoBankAccount> {
             for (String pluginName : balanceSection.getKeys(false)) {
                 ConfigurationSection currencyNameSection = balanceSection.getConfigurationSection(pluginName);
                 if (currencyNameSection == null) {
-                    EcoToolPlugin.getPlugin()
+                    EcoToolPlugin.getInstance()
                             .getLogger()
                             .warning("Could not read the currencies of the plugin '"
                                     + pluginName
@@ -102,7 +102,7 @@ public class BankSerializer implements Serializer<EcoBankAccount> {
                             .filter(cur -> cur.getKeyName().equals(currencyName))
                             .findAny();
                     if (opCurrency.isEmpty()) {
-                        EcoToolPlugin.getPlugin()
+                        EcoToolPlugin.getInstance()
                                 .getLogger()
                                 .warning("Could not find the currency of "
                                         + pluginName

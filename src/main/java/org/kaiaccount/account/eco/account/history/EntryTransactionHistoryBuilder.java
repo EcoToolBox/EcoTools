@@ -22,6 +22,7 @@ public class EntryTransactionHistoryBuilder {
     private TransactionType type;
     private LocalDateTime time;
     private @Nullable String fromName;
+    private @Nullable String toName;
     private @Nullable String reason;
 
     @CheckReturnValue
@@ -93,6 +94,15 @@ public class EntryTransactionHistoryBuilder {
 
     public EntryTransactionHistoryBuilder setFromName(@Nullable String fromName) {
         this.fromName = fromName;
+        return this;
+    }
+
+    public @Nullable String getToName() {
+        return this.toName;
+    }
+
+    public EntryTransactionHistoryBuilder setToName(@Nullable String toName) {
+        this.toName = toName;
         return this;
     }
 

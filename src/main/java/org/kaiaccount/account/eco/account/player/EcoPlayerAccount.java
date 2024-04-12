@@ -8,16 +8,22 @@ import org.kaiaccount.account.eco.io.EcoSerializers;
 import org.kaiaccount.account.inter.io.Serializable;
 import org.kaiaccount.account.inter.io.Serializer;
 import org.kaiaccount.account.inter.transfer.Transaction;
+import org.kaiaccount.account.inter.transfer.TransactionBuilder;
+import org.kaiaccount.account.inter.transfer.TransactionType;
 import org.kaiaccount.account.inter.transfer.payment.Payment;
+import org.kaiaccount.account.inter.transfer.payment.PaymentBuilder;
 import org.kaiaccount.account.inter.transfer.result.SingleTransactionResult;
 import org.kaiaccount.account.inter.transfer.result.TransactionResult;
 import org.kaiaccount.account.inter.transfer.result.failed.FailedTransactionResult;
+import org.kaiaccount.account.inter.transfer.result.failed.SingleFailedTransactionResult;
 import org.kaiaccount.account.inter.type.IsolatedAccount;
 import org.kaiaccount.account.inter.type.player.AbstractPlayerAccount;
 import org.kaiaccount.account.inter.type.player.PlayerAccountBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -149,6 +155,15 @@ public class EcoPlayerAccount extends AbstractPlayerAccount
         if (result instanceof FailedTransactionResult) {
             //no changes
             return;
+        }
+        if (result != null) {
+            List<SimpleEntryTransactionHistory> transactions = result
+                    .getTransactions()
+                    .parallelStream()
+                    .filter(transaction -> transaction.getTarget().equals(EcoPlayerAccount.this))
+                    .map(transaction -> new EntryTransactionHistoryBuilder().fromTransaction(transaction).build())
+                    .toList();
+            this.transactionHistory.addAll(transactions);
         }
         try {
             save();

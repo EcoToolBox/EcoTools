@@ -36,7 +36,12 @@ public class EcoToolPlugin extends JavaPlugin {
         plugin = this;
     }
 
+    @Deprecated
     public static EcoToolPlugin getPlugin() {
+        return getInstance();
+    }
+
+    public static EcoToolPlugin getInstance() {
         return plugin;
     }
 
