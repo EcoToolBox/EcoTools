@@ -60,7 +60,7 @@ public class RemoveCurrencyCommand implements ArgumentCommand {
         Currency<?> currencyToRemove = commandContext.getArgument(this, CURRENCY);
         Currency<?> currencyToExchange = commandContext.getArgument(this, EXCHANGE_TO);
 
-        List<PlayerAccount<?>> issuePlayerAccounts = AccountInterface.getManager()
+        List<PlayerAccount> issuePlayerAccounts = AccountInterface.getManager()
                 .getPlayerAccounts()
                 .parallelStream()
                 .filter(p -> p.getBalance(currencyToRemove).compareTo(

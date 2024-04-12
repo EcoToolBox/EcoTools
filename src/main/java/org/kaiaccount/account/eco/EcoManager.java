@@ -24,7 +24,7 @@ import java.util.concurrent.LinkedTransferQueue;
 
 public class EcoManager implements AccountInterfaceManager {
     private final Collection<Currency<?>> currencies = new LinkedTransferQueue<>();
-    private final Collection<PlayerAccount<?>> playerAccounts = new LinkedBlockingQueue<>();
+    private final Collection<PlayerAccount> playerAccounts = new LinkedBlockingQueue<>();
     private final Collection<NamedAccount> namedAccounts = new LinkedBlockingQueue<>();
 
     @Override
@@ -58,7 +58,7 @@ public class EcoManager implements AccountInterfaceManager {
     }
 
     @Override
-    public @NotNull Collection<PlayerAccount<?>> getPlayerAccounts() {
+    public @NotNull Collection<PlayerAccount> getPlayerAccounts() {
         return Collections.unmodifiableCollection(this.playerAccounts);
     }
 
@@ -68,7 +68,7 @@ public class EcoManager implements AccountInterfaceManager {
     }
 
     @Override
-    public void registerPlayerAccount(@NotNull PlayerAccount<?> account) {
+    public void registerPlayerAccount(@NotNull PlayerAccount account) {
         this.playerAccounts.add(account);
     }
 
@@ -81,8 +81,8 @@ public class EcoManager implements AccountInterfaceManager {
     }
 
     @Override
-    public @NotNull PlayerAccount<?> loadPlayerAccount(@NotNull OfflinePlayer player) {
-        PlayerAccount<?> account;
+    public @NotNull PlayerAccount loadPlayerAccount(@NotNull OfflinePlayer player) {
+        PlayerAccount account;
         try {
             account = EcoToolPlugin.getPlugin().loadPlayerAccount(player.getUniqueId());
         } catch (IllegalStateException e) {
@@ -93,7 +93,7 @@ public class EcoManager implements AccountInterfaceManager {
     }
 
     @Override
-    public void deregisterPlayerAccount(@NotNull PlayerAccount<?> account) {
+    public void deregisterPlayerAccount(@NotNull PlayerAccount account) {
         this.playerAccounts.remove(account);
     }
 

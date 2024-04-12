@@ -115,7 +115,7 @@ public class BankSerializer implements Serializer<EcoBankAccount> {
                 }
             }
         }
-        PlayerAccount<?> owner = AccountInterface.getManager().getPlayerAccount(bankOwnerId);
+        PlayerAccount owner = AccountInterface.getManager().getPlayerAccount(bankOwnerId);
         return new EcoBankAccount(new PlayerBankAccountBuilder().setAccount(owner)
                 .setName(bankName)
                 .setAccountHolders(accounts)

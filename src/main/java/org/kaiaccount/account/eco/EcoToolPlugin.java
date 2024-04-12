@@ -82,7 +82,7 @@ public class EcoToolPlugin extends JavaPlugin {
     }
 
     private void loadBankAccounts() {
-        for (PlayerAccount<?> account : AccountInterface.getManager().getPlayerAccounts()) {
+        for (PlayerAccount account : AccountInterface.getManager().getPlayerAccounts()) {
             File folder = new File("plugins/eco/players/" + account.getPlayer().getUniqueId() + "/");
             load(folder, EcoSerializers.BANK, account::registerBank);
         }

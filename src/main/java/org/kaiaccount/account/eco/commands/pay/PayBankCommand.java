@@ -77,7 +77,7 @@ public class PayBankCommand implements ArgumentCommand {
             return true;
         }
         PaymentBuilder value = commandContext.getArgument(this, VALUE);
-        PlayerAccount<?> playerAccount = AccountInterface.getManager().getPlayerAccount(player);
+        PlayerAccount playerAccount = AccountInterface.getManager().getPlayerAccount(player);
         if (!(playerAccount instanceof AccountType playerAccountType)) {
             commandContext.getSource()
                     .sendMessage(

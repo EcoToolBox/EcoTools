@@ -60,10 +60,9 @@ public class BankSerializerTests {
 
         Server server = Mockito.mock(Server.class);
         Mockito.when(server.getOfflinePlayer(bankOwner)).thenReturn(mockedPlayer);
-        //noinspection ResultOfMethodCallIgnored
         bukkitMocked.when(Bukkit::getServer).thenReturn(server);
 
-        PlayerAccount<FakePlayerAccount> playerAccount = new FakePlayerAccount(mockedPlayer);
+        PlayerAccount playerAccount = new FakePlayerAccount(mockedPlayer);
         manager.playerAccounts.add(playerAccount);
 
         //run
@@ -90,7 +89,7 @@ public class BankSerializerTests {
         OfflinePlayer mockedPlayer = Mockito.mock(OfflinePlayer.class);
         Mockito.when(mockedPlayer.getUniqueId()).thenReturn(bankOwner);
 
-        PlayerAccount<FakePlayerAccount> ownerAccount = new FakePlayerAccount(mockedPlayer);
+        PlayerAccount ownerAccount = new FakePlayerAccount(mockedPlayer);
 
         YamlConfiguration configuration = Mockito.mock(YamlConfiguration.class);
         EcoBankAccount bankAccount =
@@ -125,7 +124,7 @@ public class BankSerializerTests {
         OfflinePlayer mockedPlayer = Mockito.mock(OfflinePlayer.class);
         Mockito.when(mockedPlayer.getUniqueId()).thenReturn(bankOwner);
 
-        PlayerAccount<FakePlayerAccount> ownerAccount = new FakePlayerAccount(mockedPlayer);
+        PlayerAccount ownerAccount = new FakePlayerAccount(mockedPlayer);
 
         YamlConfiguration configuration = Mockito.mock(YamlConfiguration.class);
         EcoBankAccount bankAccount = new EcoBankAccount(

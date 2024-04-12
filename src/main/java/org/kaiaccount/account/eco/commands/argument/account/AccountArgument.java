@@ -7,17 +7,16 @@ import org.mose.command.CommandArgument;
 import org.mose.command.CommandArgumentResult;
 import org.mose.command.arguments.collection.source.UserArgument;
 import org.mose.command.arguments.operation.MappedArgumentWrapper;
-import org.mose.command.context.CommandArgumentContext;
+import org.mose.command.context.ArgumentContext;
 import org.mose.command.context.CommandContext;
+import org.mose.command.exception.ArgumentException;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class AccountArgument<A extends Account> implements CommandArgument<A> {
 
@@ -56,43 +55,32 @@ public class AccountArgument<A extends Account> implements CommandArgument<A> {
     }
 
     @Override
-    public @NotNull CommandArgumentResult<A> parse(@NotNull CommandContext commandContext, @NotNull CommandArgumentContext<A> commandArgumentContext) throws IOException {
-        if (commandContext.getCommand().length < commandArgumentContext.getFirstArgument() + 1) {
-            throw new IOException("Not enough arguments");
+    public @NotNull CommandArgumentResult<A> parse(@NotNull CommandContext context, @NotNull ArgumentContext argument) throws ArgumentException {
+        if (context.getCommand().length < argument.getArgumentIndex() + 1) {
+            throw new ArgumentException("Not enough arguments");
         }
 
-        String peek = commandArgumentContext.getFocusArgument();
+        String peek = argument.getFocusArgument();
 
-        for (CommandArgument<? extends A> argument : this.arguments) {
-            if (!argument.getId().equalsIgnoreCase(peek)) {
+        for (CommandArgument<? extends A> arg : this.arguments) {
+            if (!arg.getId().equalsIgnoreCase(peek)) {
                 continue;
             }
-            CommandArgumentResult<? extends A> result = argumentParse(argument, commandContext, commandArgumentContext);
+            CommandArgumentResult<? extends A> result = arg.parse(context, argument);
             return new CommandArgumentResult<>(result.getPosition(), result.value());
         }
-        throw new IOException("Unknown account type of " + peek);
+        throw new ArgumentException("Unknown account type of " + peek);
     }
 
     @Override
-    public @NotNull Collection<String> suggest(@NotNull CommandContext commandContext, @NotNull CommandArgumentContext<A> commandArgumentContext) {
-        String[] remaining = commandArgumentContext.getRemainingArguments();
-        String peek = commandArgumentContext.getFocusArgument().toLowerCase();
+    public @NotNull Collection<String> suggest(@NotNull CommandContext commandContext, @NotNull ArgumentContext argument) {
+        String[] remaining = argument.getRemainingArguments();
+        String peek = argument.getFocusArgument().toLowerCase();
 
         if (remaining.length == 1) {
             return this.arguments.stream().map(CommandArgument::getId).filter(id -> id.toLowerCase().startsWith(peek)).collect(Collectors.toSet());
         }
-        Optional<CommandArgument<? extends A>> opArgument = this.arguments.parallelStream().filter(argument -> argument.getId().equalsIgnoreCase(peek)).findAny();
-        if (opArgument.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return argumentSuggest(opArgument.get(), commandContext, commandArgumentContext).collect(Collectors.toSet());
-    }
-
-    private <B> Stream<String> argumentSuggest(CommandArgument<B> argument, CommandContext commandContext, CommandArgumentContext<A> argumentContext) {
-        return argument.suggest(commandContext, new CommandArgumentContext<>(argument, argumentContext.getFirstArgument() + 1, commandContext.getCommand())).stream();
-    }
-
-    private <B> CommandArgumentResult<B> argumentParse(CommandArgument<B> argument, CommandContext commandContext, CommandArgumentContext<A> argumentContext) throws IOException {
-        return argument.parse(commandContext, new CommandArgumentContext<>(argument, argumentContext.getFirstArgument() + 1, commandContext.getCommand()));
+        Optional<CommandArgument<? extends A>> opArgument = this.arguments.parallelStream().filter(arg -> arg.getId().equalsIgnoreCase(peek)).findAny();
+        return opArgument.map(commandArgument -> commandArgument.suggest(commandContext, argument)).orElse(Collections.emptyList());
     }
 }
