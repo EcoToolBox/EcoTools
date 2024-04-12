@@ -7,6 +7,7 @@ import org.kaiaccount.account.eco.message.Messages;
 import org.kaiaccount.account.eco.message.messages.error.SourceOnlyCommandMessage;
 import org.kaiaccount.account.inter.type.named.bank.player.PlayerBankAccount;
 import org.kaiaccount.account.inter.type.player.PlayerAccount;
+import org.kaiaccount.account.eco.permission.Permissions;
 import org.mose.command.ArgumentCommand;
 import org.mose.command.CommandArgument;
 import org.mose.command.arguments.operation.ExactArgument;
@@ -33,7 +34,7 @@ public class CreatePlayerBankAccountCommand implements ArgumentCommand {
 
     @Override
     public @NotNull Optional<String> getPermissionNode() {
-        return Optional.empty();
+        return Optional.of(Permissions.CREATE_BANK_ACCOUNT.getPermissionNode());
     }
 
     @Override
