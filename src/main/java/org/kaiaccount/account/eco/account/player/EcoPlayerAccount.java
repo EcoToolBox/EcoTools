@@ -1,39 +1,39 @@
 package org.kaiaccount.account.eco.account.player;
 
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.kaiaccount.account.eco.EcoToolPlugin;
+import org.kaiaccount.account.eco.account.EcoAccount;
+import org.kaiaccount.account.eco.account.history.EntryTransactionHistoryBuilder;
+import org.kaiaccount.account.eco.account.history.SimpleEntryTransactionHistory;
+import org.kaiaccount.account.eco.account.history.TransactionHistory;
 import org.kaiaccount.account.eco.io.EcoSerializers;
 import org.kaiaccount.account.inter.io.Serializable;
 import org.kaiaccount.account.inter.io.Serializer;
 import org.kaiaccount.account.inter.transfer.Transaction;
-import org.kaiaccount.account.inter.transfer.TransactionBuilder;
-import org.kaiaccount.account.inter.transfer.TransactionType;
 import org.kaiaccount.account.inter.transfer.payment.Payment;
-import org.kaiaccount.account.inter.transfer.payment.PaymentBuilder;
 import org.kaiaccount.account.inter.transfer.result.SingleTransactionResult;
 import org.kaiaccount.account.inter.transfer.result.TransactionResult;
 import org.kaiaccount.account.inter.transfer.result.failed.FailedTransactionResult;
-import org.kaiaccount.account.inter.transfer.result.failed.SingleFailedTransactionResult;
 import org.kaiaccount.account.inter.type.IsolatedAccount;
 import org.kaiaccount.account.inter.type.player.AbstractPlayerAccount;
 import org.kaiaccount.account.inter.type.player.PlayerAccountBuilder;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 public class EcoPlayerAccount extends AbstractPlayerAccount
-        implements Serializable<EcoPlayerAccount> {
+        implements Serializable<EcoPlayerAccount>, EcoAccount<EcoPlayerAccount> {
 
+    private final @NotNull TransactionHistory transactionHistory;
     private boolean shouldSave = true;
 
     public EcoPlayerAccount(PlayerAccountBuilder builder) {
         super(builder);
+        this.transactionHistory = new TransactionHistory(this);
     }
 
     @Override
@@ -138,12 +138,18 @@ public class EcoPlayerAccount extends AbstractPlayerAccount
     }
 
     @Override
-    public void save(@NotNull YamlConfiguration configuration) {
-        if (!this.shouldSave) {
-            //Will only be false if multiple transactions occur
-            return;
-        }
-        Serializable.super.save(configuration);
+    public boolean isSaving() {
+        return this.shouldSave;
+    }
+
+    @Override
+    public void setSaving(boolean saving) {
+        this.shouldSave = saving;
+    }
+
+    @Override
+    public TransactionHistory getTransactionHistory() {
+        return this.transactionHistory;
     }
 
     private <T extends TransactionResult> CompletableFuture<T> saveOnFuture(@NotNull CompletableFuture<T> future) {
