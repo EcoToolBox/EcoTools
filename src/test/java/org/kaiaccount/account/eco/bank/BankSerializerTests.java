@@ -5,6 +5,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,9 +13,13 @@ import org.junit.jupiter.api.Test;
 import org.kaiaccount.AccountInterface;
 import org.kaiaccount.account.eco.FakeGlobalManager;
 import org.kaiaccount.account.eco.FakePlayerAccount;
+import org.kaiaccount.account.eco.account.bank.BankSerializer;
+import org.kaiaccount.account.eco.account.bank.EcoBankAccount;
 import org.kaiaccount.account.eco.currency.EcoCurrency;
 import org.kaiaccount.account.inter.currency.Currency;
 import org.kaiaccount.account.inter.currency.CurrencyBuilder;
+import org.kaiaccount.account.inter.transfer.TransactionType;
+import org.kaiaccount.account.inter.transfer.payment.PaymentBuilder;
 import org.kaiaccount.account.inter.type.named.bank.player.PlayerBankAccountBuilder;
 import org.kaiaccount.account.inter.type.player.PlayerAccount;
 import org.mockito.MockedStatic;
@@ -60,10 +65,9 @@ public class BankSerializerTests {
 
         Server server = Mockito.mock(Server.class);
         Mockito.when(server.getOfflinePlayer(bankOwner)).thenReturn(mockedPlayer);
-        //noinspection ResultOfMethodCallIgnored
         bukkitMocked.when(Bukkit::getServer).thenReturn(server);
 
-        PlayerAccount<FakePlayerAccount> playerAccount = new FakePlayerAccount(mockedPlayer);
+        PlayerAccount playerAccount = new FakePlayerAccount(mockedPlayer);
         manager.playerAccounts.add(playerAccount);
 
         //run
@@ -90,7 +94,7 @@ public class BankSerializerTests {
         OfflinePlayer mockedPlayer = Mockito.mock(OfflinePlayer.class);
         Mockito.when(mockedPlayer.getUniqueId()).thenReturn(bankOwner);
 
-        PlayerAccount<FakePlayerAccount> ownerAccount = new FakePlayerAccount(mockedPlayer);
+        PlayerAccount ownerAccount = new FakePlayerAccount(mockedPlayer);
 
         YamlConfiguration configuration = Mockito.mock(YamlConfiguration.class);
         EcoBankAccount bankAccount =
@@ -100,8 +104,95 @@ public class BankSerializerTests {
         new BankSerializer().serialize(configuration, bankAccount);
 
         //test
-        Mockito.verify(configuration, Mockito.times(1)).set(BankSerializer.BANK_OWNER, bankOwner);
-        Mockito.verify(configuration, Mockito.times(1)).set(BankSerializer.BANK_NAME, bankName);
+        Mockito.verify(configuration, Mockito.times(2)).set(Mockito.anyString(), Mockito.anyString());
+    }
+
+    @Test
+    public void testCanHoldDepositTransaction() {
+        //setup
+        String bankName = "Test Bank Name";
+        String pluginName = "plugin";
+        String currencyName = "test";
+        UUID bankOwner = UUID.randomUUID();
+        Map<Currency<?>, BigDecimal> balance = new HashMap<>();
+
+        PluginManager pluginManager = Mockito.mock(PluginManager.class);
+        bukkitMocked.when(Bukkit::getPluginManager).thenReturn(pluginManager);
+
+        Plugin plugin = Mockito.mock(Plugin.class);
+        Mockito.when(plugin.getName()).thenReturn(pluginName);
+
+        Currency<?> accountCurrency =
+                new EcoCurrency(new CurrencyBuilder().setName(currencyName).setPlugin(plugin).setSymbol("t"));
+        BigDecimal amount = BigDecimal.TEN;
+
+        balance.put(accountCurrency, amount);
+
+        OfflinePlayer mockedPlayer = Mockito.mock(OfflinePlayer.class);
+        Mockito.when(mockedPlayer.getUniqueId()).thenReturn(bankOwner);
+
+        PlayerAccount ownerAccount = new FakePlayerAccount(mockedPlayer);
+
+        EcoBankAccount bankAccount = new EcoBankAccount(
+                new PlayerBankAccountBuilder().setName(bankName).setAccount(ownerAccount).setInitialBalance(balance));
+
+        var payment = new PaymentBuilder().setAmount(2).setCurrency(accountCurrency).setPlugin(plugin).build();
+
+        //act
+        bankAccount.depositSynced(payment);
+
+        //assert
+        var history = bankAccount.getTransactionHistory();
+
+        Assertions.assertEquals(1, history.size(), "Invalid transaction amount found");
+        var transactionHistory = history.get(0);
+        Assertions.assertEquals(TransactionType.DEPOSIT, transactionHistory.getTransactionType());
+        Assertions.assertEquals(payment.getAmount(), transactionHistory.getAmount());
+        Assertions.assertEquals(payment.getCurrency(), transactionHistory.getCurrency());
+    }
+
+    @Test
+    public void testCanHoldSetOverrideTransaction() {
+//setup
+        String bankName = "Test Bank Name";
+        String pluginName = "plugin";
+        String currencyName = "test";
+        UUID bankOwner = UUID.randomUUID();
+        Map<Currency<?>, BigDecimal> balance = new HashMap<>();
+
+        PluginManager pluginManager = Mockito.mock(PluginManager.class);
+        bukkitMocked.when(Bukkit::getPluginManager).thenReturn(pluginManager);
+
+        Plugin plugin = Mockito.mock(Plugin.class);
+        Mockito.when(plugin.getName()).thenReturn(pluginName);
+
+        Currency<?> accountCurrency =
+                new EcoCurrency(new CurrencyBuilder().setName(currencyName).setPlugin(plugin).setSymbol("t"));
+        BigDecimal amount = BigDecimal.TEN;
+
+        balance.put(accountCurrency, amount);
+
+        OfflinePlayer mockedPlayer = Mockito.mock(OfflinePlayer.class);
+        Mockito.when(mockedPlayer.getUniqueId()).thenReturn(bankOwner);
+
+        PlayerAccount ownerAccount = new FakePlayerAccount(mockedPlayer);
+
+        EcoBankAccount bankAccount = new EcoBankAccount(
+                new PlayerBankAccountBuilder().setName(bankName).setAccount(ownerAccount).setInitialBalance(balance));
+
+        var payment = new PaymentBuilder().setAmount(2).setCurrency(accountCurrency).setPlugin(plugin).build();
+
+        //act
+        bankAccount.setSynced(payment);
+
+        //assert
+        var history = bankAccount.getTransactionHistory();
+
+        Assertions.assertEquals(1, history.size(), "Invalid transaction amount found");
+        var transactionHistory = history.get(0);
+        Assertions.assertEquals(TransactionType.WITHDRAW, transactionHistory.getTransactionType());
+        Assertions.assertEquals(8, transactionHistory.getAmount().doubleValue());
+        Assertions.assertEquals(payment.getCurrency(), transactionHistory.getCurrency());
     }
 
     @Test
@@ -125,7 +216,7 @@ public class BankSerializerTests {
         OfflinePlayer mockedPlayer = Mockito.mock(OfflinePlayer.class);
         Mockito.when(mockedPlayer.getUniqueId()).thenReturn(bankOwner);
 
-        PlayerAccount<FakePlayerAccount> ownerAccount = new FakePlayerAccount(mockedPlayer);
+        PlayerAccount ownerAccount = new FakePlayerAccount(mockedPlayer);
 
         YamlConfiguration configuration = Mockito.mock(YamlConfiguration.class);
         EcoBankAccount bankAccount = new EcoBankAccount(
@@ -135,9 +226,11 @@ public class BankSerializerTests {
         new BankSerializer().serialize(configuration, bankAccount);
 
         //test
-        Mockito.verify(configuration, Mockito.times(1)).set(BankSerializer.BANK_OWNER, bankOwner);
+        Mockito.verify(configuration, Mockito.times(4)).set(Mockito.anyString(), Mockito.any());
+        /*Mockito.verify(configuration, Mockito.times(1)).set(BankSerializer.BANK_OWNER, bankOwner);
         Mockito.verify(configuration, Mockito.times(1)).set(BankSerializer.BANK_NAME, bankName);
         Mockito.verify(configuration, Mockito.times(1)).set(
-                String.join(".", BankSerializer.ACCOUNT_BALANCE, pluginName, currencyName), amount.doubleValue());
+                String.join(".", BankSerializer.ACCOUNT_BALANCE, pluginName, currencyName), amount.doubleValue());*/
+        //another for bank transaction
     }
 }

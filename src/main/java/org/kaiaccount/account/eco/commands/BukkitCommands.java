@@ -16,6 +16,7 @@ public final class BukkitCommands {
     public static final BukkitCommandWrapper PAY = new BukkitCommandWrapper(Commands.PAY_PLAYER, Commands.PAY_BANK, Commands.PAY_NAMED, Commands.PAY_FROM_ANY);
     public static final BukkitCommandWrapper BANK = new BukkitCommandWrapper(Commands.CREATE_PLAYER_BANK);
     public static final BukkitCommandWrapper ACCOUNT = new BukkitCommandWrapper(Commands.CREATE_NAMED_ACCOUNT, Commands.REMOVE_NAMED_ACCOUNT);
+    public static final BukkitCommandWrapper TRANSACTIONS = new BukkitCommandWrapper(Commands.TRANSACTIONS);
 
     private BukkitCommands() {
         throw new RuntimeException("Should not run");

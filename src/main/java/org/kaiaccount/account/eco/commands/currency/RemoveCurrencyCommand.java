@@ -60,7 +60,7 @@ public class RemoveCurrencyCommand implements ArgumentCommand {
         Currency<?> currencyToRemove = commandContext.getArgument(this, CURRENCY);
         Currency<?> currencyToExchange = commandContext.getArgument(this, EXCHANGE_TO);
 
-        List<PlayerAccount<?>> issuePlayerAccounts = AccountInterface.getManager()
+        List<PlayerAccount> issuePlayerAccounts = AccountInterface.getManager()
                 .getPlayerAccounts()
                 .parallelStream()
                 .filter(p -> p.getBalance(currencyToRemove).compareTo(
@@ -142,7 +142,7 @@ public class RemoveCurrencyCommand implements ArgumentCommand {
                                                                  @NotNull Currency<?> remove) {
         return account.set(new PaymentBuilder().setCurrency(remove)
                 .setAmount(BigDecimal.ZERO)
-                .build(EcoToolPlugin.getPlugin()));
+                .build(EcoToolPlugin.getInstance()));
     }
 
     private CompletableFuture<SingleTransactionResult> exchangeTo(@NotNull Account account,
@@ -155,6 +155,6 @@ public class RemoveCurrencyCommand implements ArgumentCommand {
                         .orElseThrow(() -> new RuntimeException("Worth not found in to exchange")));
         return account.deposit(new PaymentBuilder().setCurrency(toExchange)
                 .setAmount(currentBalance)
-                .build(EcoToolPlugin.getPlugin()));
+                .build(EcoToolPlugin.getInstance()));
     }
 }

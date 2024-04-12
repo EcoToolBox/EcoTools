@@ -1,8 +1,12 @@
-package org.kaiaccount.account.eco.bank;
+package org.kaiaccount.account.eco.account.bank;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.kaiaccount.account.eco.account.SyncedEcoAccount;
+import org.kaiaccount.account.eco.account.history.EntryTransactionHistoryBuilder;
+import org.kaiaccount.account.eco.account.history.SimpleEntryTransactionHistory;
+import org.kaiaccount.account.eco.account.history.TransactionHistory;
 import org.kaiaccount.account.eco.io.EcoSerializers;
+import org.kaiaccount.account.eco.utils.CommonUtils;
 import org.kaiaccount.account.inter.io.Serializable;
 import org.kaiaccount.account.inter.io.Serializer;
 import org.kaiaccount.account.inter.transfer.Transaction;
@@ -19,16 +23,20 @@ import org.kaiaccount.account.inter.type.named.bank.player.PlayerBankAccountBuil
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 public class EcoBankAccount extends AbstractPlayerBankAccount
-        implements PlayerBankAccount, Serializable<EcoBankAccount> {
+        implements PlayerBankAccount, SyncedEcoAccount<EcoBankAccount>, Serializable<EcoBankAccount> {
 
+    private final TransactionHistory history;
+    private boolean canSave;
 
     public EcoBankAccount(@NotNull PlayerBankAccountBuilder builder) {
         super(builder);
+        this.history = new TransactionHistory(this);
     }
 
     @Override
@@ -82,9 +90,7 @@ public class EcoBankAccount extends AbstractPlayerBankAccount
     @NotNull
     @Override
     public SingleTransactionResult setSynced(@NotNull Payment payment) {
-        SingleTransactionResult result = super.setSynced(payment);
-        this.saveBank(result);
-        return result;
+        return SyncedEcoAccount.super.setSynced(payment);
     }
 
     @NotNull
@@ -97,14 +103,7 @@ public class EcoBankAccount extends AbstractPlayerBankAccount
     @Override
     public CompletableFuture<Void> forceSet(@NotNull Payment payment) {
         CompletableFuture<Void> future = super.forceSet(payment);
-        future.thenAccept(c -> {
-            try {
-                save();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        return future;
+        return future.thenAccept((value) -> saveBank(CommonUtils.setOverrideResult(EcoBankAccount.this, payment)));
     }
 
     @NotNull
@@ -118,11 +117,7 @@ public class EcoBankAccount extends AbstractPlayerBankAccount
     @Override
     public void forceSetSynced(@NotNull Payment payment) {
         super.forceSetSynced(payment);
-        try {
-            save();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        saveBank(CommonUtils.setOverrideResult(this, payment));
     }
 
     @NotNull
@@ -157,15 +152,38 @@ public class EcoBankAccount extends AbstractPlayerBankAccount
         return future;
     }
 
-    private void saveBank(@Nullable TransactionResult result) {
+    private void saveBank(@NotNull TransactionResult result) {
         if (result instanceof FailedTransactionResult) {
             //no changes
             return;
         }
+        List<SimpleEntryTransactionHistory> transactions = result
+                .getTransactions()
+                .parallelStream()
+                .filter(transaction -> transaction.getTarget().equals(EcoBankAccount.this))
+                .map(transaction -> new EntryTransactionHistoryBuilder().fromTransaction(transaction).build())
+                .toList();
+        this.history.addAll(transactions);
+
         try {
             save();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public boolean isSaving() {
+        return this.canSave;
+    }
+
+    @Override
+    public void setSaving(boolean saving) {
+        this.canSave = saving;
+    }
+
+    @Override
+    public TransactionHistory getTransactionHistory() {
+        return this.history;
     }
 }

@@ -36,7 +36,12 @@ public class EcoToolPlugin extends JavaPlugin {
         plugin = this;
     }
 
+    @Deprecated
     public static EcoToolPlugin getPlugin() {
+        return getInstance();
+    }
+
+    public static EcoToolPlugin getInstance() {
         return plugin;
     }
 
@@ -65,7 +70,7 @@ public class EcoToolPlugin extends JavaPlugin {
         registerCommand("pay", BukkitCommands.PAY);
         registerCommand("bank", BukkitCommands.BANK);
         registerCommand("account", BukkitCommands.ACCOUNT);
-
+        registerCommand("transactions", BukkitCommands.TRANSACTIONS);
 
         Collection<RegisteredServiceProvider<Economy>> rsp = getServer().getServicesManager().getRegistrations(Economy.class);
         getLogger().warning("Economy found: " + rsp.size());
@@ -82,7 +87,7 @@ public class EcoToolPlugin extends JavaPlugin {
     }
 
     private void loadBankAccounts() {
-        for (PlayerAccount<?> account : AccountInterface.getManager().getPlayerAccounts()) {
+        for (PlayerAccount account : AccountInterface.getManager().getPlayerAccounts()) {
             File folder = new File("plugins/eco/players/" + account.getPlayer().getUniqueId() + "/");
             load(folder, EcoSerializers.BANK, account::registerBank);
         }

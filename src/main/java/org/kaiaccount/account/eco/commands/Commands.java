@@ -18,6 +18,7 @@ import org.kaiaccount.account.eco.commands.pay.PayBankCommand;
 import org.kaiaccount.account.eco.commands.pay.PayNamedCommand;
 import org.kaiaccount.account.eco.commands.pay.PayPlayerCommand;
 import org.kaiaccount.account.eco.commands.pay.from.PayFromAnyCommand;
+import org.kaiaccount.account.eco.commands.transaction.TransactionsRangeCommand;
 
 public final class Commands {
 
@@ -39,6 +40,7 @@ public final class Commands {
     public static final CreatePlayerBankAccountCommand CREATE_PLAYER_BANK = new CreatePlayerBankAccountCommand();
     public static final CreateNamedAccountCommand CREATE_NAMED_ACCOUNT = new CreateNamedAccountCommand();
     public static final RemoveNamedAccountCommand REMOVE_NAMED_ACCOUNT = new RemoveNamedAccountCommand();
+    public static final TransactionsRangeCommand TRANSACTIONS = new TransactionsRangeCommand();
 
     private Commands() {
         throw new RuntimeException("Dont do that");

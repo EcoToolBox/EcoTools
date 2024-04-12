@@ -44,7 +44,7 @@ public class CreatePlayerBankAccountCommand implements ArgumentCommand {
                     .sendMessage(Messages.SOURCE_ONLY.getProcessedMessage(SourceOnlyCommandMessage.PLAYER_SOURCE));
             return true;
         }
-        PlayerAccount<?> account = AccountInterface.getManager().getPlayerAccount(player);
+        PlayerAccount account = AccountInterface.getManager().getPlayerAccount(player);
         if (account.getBank(newBankName).isPresent()) {
             commandContext.getSource().sendMessage("Bank already by that name");
             return true;

@@ -30,3 +30,6 @@ commands:
   account:
     description: Account admin commands
     usage: /account [command]
+  transactions:
+    description: See all previous transactions
+    usage: /transactions [account] [start date] [end date]

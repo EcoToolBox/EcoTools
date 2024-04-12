@@ -57,7 +57,7 @@ public class AddCurrencyCommand implements ArgumentCommand {
 		boolean isDefault = AccountInterface.getManager().getCurrencies().isEmpty();
 		Currency<?> currency =
 				new CurrencyBuilder().setName(name)
-						.setPlugin(EcoToolPlugin.getPlugin())
+						.setPlugin(EcoToolPlugin.getInstance())
 						.setSymbol(symbol)
 						.setDisplayNameMultiple(multiDisplay)
 						.setDisplayNameSingle(singleDisplay)
@@ -69,7 +69,7 @@ public class AddCurrencyCommand implements ArgumentCommand {
 		Optional<Currency<?>> alreadyRegistered =
 				AccountInterface.getManager().getCurrencies().parallelStream().filter(search -> {
 					if (search.getKeyName().equalsIgnoreCase(name) && search.getPlugin()
-							.equals(EcoToolPlugin.getPlugin())) {
+							.equals(EcoToolPlugin.getInstance())) {
 						return true;
 					}
 					return search.getSymbol().equalsIgnoreCase(symbol);

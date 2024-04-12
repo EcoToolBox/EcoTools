@@ -6,7 +6,7 @@ import org.jetbrains.annotations.UnmodifiableView;
 import org.kaiaccount.AccountInterfaceManager;
 import org.kaiaccount.account.eco.account.named.EcoNamedAccount;
 import org.kaiaccount.account.eco.account.player.EcoPlayerAccount;
-import org.kaiaccount.account.eco.bank.EcoBankAccount;
+import org.kaiaccount.account.eco.account.bank.EcoBankAccount;
 import org.kaiaccount.account.eco.currency.EcoCurrency;
 import org.kaiaccount.account.inter.currency.Currency;
 import org.kaiaccount.account.inter.currency.ToCurrency;
@@ -24,12 +24,12 @@ import java.util.concurrent.LinkedTransferQueue;
 
 public class EcoManager implements AccountInterfaceManager {
     private final Collection<Currency<?>> currencies = new LinkedTransferQueue<>();
-    private final Collection<PlayerAccount<?>> playerAccounts = new LinkedBlockingQueue<>();
+    private final Collection<PlayerAccount> playerAccounts = new LinkedBlockingQueue<>();
     private final Collection<NamedAccount> namedAccounts = new LinkedBlockingQueue<>();
 
     @Override
     public @NotNull EcoToolPlugin getVaultPlugin() {
-        return EcoToolPlugin.getPlugin();
+        return EcoToolPlugin.getInstance();
     }
 
     @Override
@@ -58,7 +58,7 @@ public class EcoManager implements AccountInterfaceManager {
     }
 
     @Override
-    public @NotNull Collection<PlayerAccount<?>> getPlayerAccounts() {
+    public @NotNull Collection<PlayerAccount> getPlayerAccounts() {
         return Collections.unmodifiableCollection(this.playerAccounts);
     }
 
@@ -68,7 +68,7 @@ public class EcoManager implements AccountInterfaceManager {
     }
 
     @Override
-    public void registerPlayerAccount(@NotNull PlayerAccount<?> account) {
+    public void registerPlayerAccount(@NotNull PlayerAccount account) {
         this.playerAccounts.add(account);
     }
 
@@ -81,10 +81,10 @@ public class EcoManager implements AccountInterfaceManager {
     }
 
     @Override
-    public @NotNull PlayerAccount<?> loadPlayerAccount(@NotNull OfflinePlayer player) {
-        PlayerAccount<?> account;
+    public @NotNull PlayerAccount loadPlayerAccount(@NotNull OfflinePlayer player) {
+        PlayerAccount account;
         try {
-            account = EcoToolPlugin.getPlugin().loadPlayerAccount(player.getUniqueId());
+            account = EcoToolPlugin.getInstance().loadPlayerAccount(player.getUniqueId());
         } catch (IllegalStateException e) {
             account = new EcoPlayerAccount(new PlayerAccountBuilder().setPlayer(player));
         }
@@ -93,7 +93,7 @@ public class EcoManager implements AccountInterfaceManager {
     }
 
     @Override
-    public void deregisterPlayerAccount(@NotNull PlayerAccount<?> account) {
+    public void deregisterPlayerAccount(@NotNull PlayerAccount account) {
         this.playerAccounts.remove(account);
     }
 

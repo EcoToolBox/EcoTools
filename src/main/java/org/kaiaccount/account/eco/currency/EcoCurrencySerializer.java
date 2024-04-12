@@ -48,7 +48,7 @@ public class EcoCurrencySerializer implements Serializer<EcoCurrency> {
 
 		return new EcoCurrency(new CurrencyBuilder().setSymbol(symbol)
 				.setName(name)
-				.setPlugin(EcoToolPlugin.getPlugin())
+				.setPlugin(EcoToolPlugin.getInstance())
 				.setWorth(worth)
 				.setDisplayNameMultiple(multiName)
 				.setDisplayNameSingle(singleName)

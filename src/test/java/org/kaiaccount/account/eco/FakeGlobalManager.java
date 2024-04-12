@@ -19,7 +19,7 @@ import java.util.LinkedList;
 public class FakeGlobalManager implements AccountInterfaceManager {
 
     public final Collection<Currency<?>> currencies = new LinkedList<>();
-    public final Collection<PlayerAccount<?>> playerAccounts = new LinkedList<>();
+    public final Collection<PlayerAccount> playerAccounts = new LinkedList<>();
     public final Collection<NamedAccount> namedAccounts = new LinkedList<>();
     public ToCurrency toCurrency;
     public ToBankAccount toBankAccount;
@@ -47,7 +47,7 @@ public class FakeGlobalManager implements AccountInterfaceManager {
 
     @NotNull
     @Override
-    public Collection<PlayerAccount<?>> getPlayerAccounts() {
+    public Collection<PlayerAccount> getPlayerAccounts() {
         return this.playerAccounts;
     }
 
@@ -67,7 +67,7 @@ public class FakeGlobalManager implements AccountInterfaceManager {
     }
 
     @Override
-    public void registerPlayerAccount(@NotNull PlayerAccount<?> account) {
+    public void registerPlayerAccount(@NotNull PlayerAccount account) {
         throw new RuntimeException("Not implemented yet");
 
     }
@@ -78,12 +78,12 @@ public class FakeGlobalManager implements AccountInterfaceManager {
     }
 
     @Override
-    public @NotNull PlayerAccount<?> loadPlayerAccount(@NotNull OfflinePlayer player) {
+    public @NotNull PlayerAccount loadPlayerAccount(@NotNull OfflinePlayer player) {
         throw new RuntimeException("Not implemented");
     }
 
     @Override
-    public void deregisterPlayerAccount(@NotNull PlayerAccount<?> account) {
+    public void deregisterPlayerAccount(@NotNull PlayerAccount account) {
         throw new RuntimeException("Not implemented yet");
 
     }

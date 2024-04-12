@@ -62,8 +62,8 @@ public class PayFromOwnBankCommand implements ArgumentCommand {
         PaymentBuilder payment = commandContext.getArgument(this, PAYMENT);
 
         new IsolatedTransaction((isolatedFrom, isolatedTo) -> {
-            CompletableFuture<SingleTransactionResult> deposit = isolatedTo.deposit(payment.setFrom(from).build(EcoToolPlugin.getPlugin()));
-            CompletableFuture<SingleTransactionResult> withdraw = isolatedFrom.withdraw(payment.build(EcoToolPlugin.getPlugin()));
+            CompletableFuture<SingleTransactionResult> deposit = isolatedTo.deposit(payment.setFrom(from).build(EcoToolPlugin.getInstance()));
+            CompletableFuture<SingleTransactionResult> withdraw = isolatedFrom.withdraw(payment.build(EcoToolPlugin.getInstance()));
             return List.of(deposit, withdraw);
         }, fromType, toType)
                 .start()
