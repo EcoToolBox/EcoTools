@@ -11,12 +11,17 @@ import org.mose.command.context.ArgumentContext;
 import org.mose.command.context.CommandContext;
 import org.mose.command.exception.ArgumentException;
 
+import org.mose.command.context.CommandArgumentContext;
+import org.mose.command.context.CommandContext;
+
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AccountArgument<A extends Account> implements CommandArgument<A> {
 
