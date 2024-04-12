@@ -1,5 +1,6 @@
 package org.kaiaccount.account.eco.commands.ecotools;
 
+import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -50,6 +51,12 @@ public class GiveEcoCommand implements ArgumentCommand {
         PlayerAccount account = AccountInterface.getManager().getPlayerAccount(player);
         Currency<?> currency = commandContext.getArgument(this, CURRENCY);
         double amount = commandContext.getArgument(this, AMOUNT);
+        if (amount == 0) {
+            commandContext.getSource().sendMessage(ChatColor.YELLOW + "Cannot send 0");
+        }
+        if (amount < 0) {
+            commandContext.getSource().sendMessage(ChatColor.RED + "Amount cannot be negative");
+        }
         account.deposit(new PaymentBuilder().setAmount(amount).setCurrency(currency).build(EcoToolPlugin.getPlugin()))
                 .thenAccept(result -> {
                     if (!(result instanceof SuccessfulTransactionResult)) {

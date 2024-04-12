@@ -2,6 +2,7 @@
 build
 */build
 .gradle
+plugins
 
 *.iml
 .name

@@ -109,12 +109,13 @@ public class TransactionsRangeCommand implements ArgumentCommand {
 
         List<EntryTransactionHistory> result = ecoAccount.getTransactionHistory().getBetween(min, max);
         int page = commandContext.getArgument(this, this.page);
+        long skipEntries = (long) PAGE_SIZE * (page - 1);
         List<EntryTransactionHistory> list = result
                 .parallelStream()
+                .filter(entry -> entry.getTime().isBefore(max))
                 .filter(entry -> entry.getTime().isAfter(min))
-                .filter(entry -> !entry.getTime().isAfter(max))
                 .sorted(Comparator.comparing(EntryTransactionHistory::getTime))
-                .skip((long) PAGE_SIZE * page)
+                .skip(skipEntries)
                 .limit(PAGE_SIZE)
                 .toList();
         commandContext.getSource().sendMessage("|---|Page: " + page + "|---|");

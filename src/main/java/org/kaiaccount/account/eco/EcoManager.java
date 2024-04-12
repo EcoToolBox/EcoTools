@@ -6,7 +6,7 @@ import org.jetbrains.annotations.UnmodifiableView;
 import org.kaiaccount.AccountInterfaceManager;
 import org.kaiaccount.account.eco.account.named.EcoNamedAccount;
 import org.kaiaccount.account.eco.account.player.EcoPlayerAccount;
-import org.kaiaccount.account.eco.bank.EcoBankAccount;
+import org.kaiaccount.account.eco.account.bank.EcoBankAccount;
 import org.kaiaccount.account.eco.currency.EcoCurrency;
 import org.kaiaccount.account.inter.currency.Currency;
 import org.kaiaccount.account.inter.currency.ToCurrency;

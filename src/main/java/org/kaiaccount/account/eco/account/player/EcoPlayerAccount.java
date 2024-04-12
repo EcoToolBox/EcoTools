@@ -3,11 +3,12 @@ package org.kaiaccount.account.eco.account.player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.kaiaccount.account.eco.EcoToolPlugin;
-import org.kaiaccount.account.eco.account.EcoAccount;
+import org.kaiaccount.account.eco.account.SyncedEcoAccount;
 import org.kaiaccount.account.eco.account.history.EntryTransactionHistoryBuilder;
 import org.kaiaccount.account.eco.account.history.SimpleEntryTransactionHistory;
 import org.kaiaccount.account.eco.account.history.TransactionHistory;
 import org.kaiaccount.account.eco.io.EcoSerializers;
+import org.kaiaccount.account.eco.utils.CommonUtils;
 import org.kaiaccount.account.inter.io.Serializable;
 import org.kaiaccount.account.inter.io.Serializer;
 import org.kaiaccount.account.inter.transfer.Transaction;
@@ -26,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 public class EcoPlayerAccount extends AbstractPlayerAccount
-        implements Serializable<EcoPlayerAccount>, EcoAccount<EcoPlayerAccount> {
+        implements Serializable<EcoPlayerAccount>, SyncedEcoAccount<EcoPlayerAccount> {
 
     private final @NotNull TransactionHistory transactionHistory;
     private boolean shouldSave = true;
@@ -100,15 +101,13 @@ public class EcoPlayerAccount extends AbstractPlayerAccount
     @NotNull
     @Override
     public SingleTransactionResult setSynced(@NotNull Payment payment) {
-        SingleTransactionResult result = super.setSynced(payment);
-        savePlayer(result);
-        return result;
+        return SyncedEcoAccount.super.setSynced(payment);
     }
 
     @NotNull
     @Override
     public CompletableFuture<SingleTransactionResult> set(@NotNull Payment payment) {
-        return this.saveOnFuture(super.set(payment));
+        return SyncedEcoAccount.super.set(payment);
     }
 
     @NotNull
@@ -128,7 +127,7 @@ public class EcoPlayerAccount extends AbstractPlayerAccount
     @Override
     public void forceSetSynced(@NotNull Payment payment) {
         super.forceSetSynced(payment);
-        savePlayer(null);
+        savePlayer(CommonUtils.setOverrideResult(this, payment));
     }
 
     @NotNull

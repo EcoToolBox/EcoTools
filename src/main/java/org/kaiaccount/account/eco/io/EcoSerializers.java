@@ -2,7 +2,7 @@ package org.kaiaccount.account.eco.io;
 
 import org.kaiaccount.account.eco.account.named.NamedAccountSerializer;
 import org.kaiaccount.account.eco.account.player.PlayerAccountSerializer;
-import org.kaiaccount.account.eco.bank.BankSerializer;
+import org.kaiaccount.account.eco.account.bank.BankSerializer;
 import org.kaiaccount.account.eco.currency.EcoCurrencySerializer;
 
 public final class EcoSerializers {
