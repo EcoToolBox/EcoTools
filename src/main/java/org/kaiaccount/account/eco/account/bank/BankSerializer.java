@@ -38,12 +38,11 @@ public class BankSerializer implements Serializer<EcoBankAccount> {
         Map<UUID, Collection<BankPermission>> accounts = new HashMap<>(value.getAccounts());
         accounts.remove(value.getAccountHolder().getPlayer().getUniqueId());
 
-        accounts
-                .forEach((account, permission) -> configuration.set(ACCOUNT_ACCESSORS + "." + account.toString(),
-                        permission.parallelStream().map(Enum::name).toList()));
-        value.getBalances()
-                .forEach((currency, amount) -> configuration.set(
-                        ACCOUNT_BALANCE + "." + currency.getPlugin().getName() + "." + currency.getKeyName(),
+        accounts.forEach((account, permission) -> configuration.set(ACCOUNT_ACCESSORS + "." + account.toString(),
+                permission.parallelStream().map(Enum::name).toList()));
+        value
+                .getBalances()
+                .forEach((currency, amount) -> configuration.set(ACCOUNT_BALANCE + "." + currency.getPlugin().getName() + "." + currency.getKeyName(),
                         amount.doubleValue()));
 
         TransactionHistory history = value.getTransactionHistory();
@@ -94,18 +93,14 @@ public class BankSerializer implements Serializer<EcoBankAccount> {
                 try {
                     uuid = UUID.fromString(accountIdString);
                 } catch (NumberFormatException e) {
-                    EcoToolPlugin.getInstance()
+                    EcoToolPlugin
+                            .getInstance()
                             .getLogger()
-                            .warning("Cannot read account accessor's UUID of '"
-                                    + accountIdString
-                                    + "' in yaml "
-                                    + configuration.getName()
-                                    + ". skipping");
+                            .warning("Cannot read account accessor's UUID of '" + accountIdString + "' in yaml " + configuration.getName() + ". skipping");
                     continue;
                 }
                 List<String> permissionsString = accountSection.getStringList(accountIdString);
-                List<BankPermission> permissions =
-                        permissionsString.parallelStream().map(BankPermission::valueOf).toList();
+                List<BankPermission> permissions = permissionsString.parallelStream().map(BankPermission::valueOf).toList();
                 accounts.put(uuid, permissions);
             }
         }
@@ -115,30 +110,27 @@ public class BankSerializer implements Serializer<EcoBankAccount> {
             for (String pluginName : balanceSection.getKeys(false)) {
                 ConfigurationSection currencyNameSection = balanceSection.getConfigurationSection(pluginName);
                 if (currencyNameSection == null) {
-                    EcoToolPlugin.getInstance()
+                    EcoToolPlugin
+                            .getInstance()
                             .getLogger()
-                            .warning("Could not read the currencies of the plugin '"
-                                    + pluginName
-                                    + "' in yaml "
-                                    + configuration.getName() + ". Skipping");
+                            .warning("Could not read the currencies of the plugin '" + pluginName + "' in yaml " + configuration.getName() + ". Skipping");
                     continue;
                 }
                 for (String currencyName : currencyNameSection.getKeys(false)) {
                     double amount = currencyNameSection.getDouble(currencyName);
-                    Optional<Currency<?>> opCurrency = AccountInterface.getManager()
+                    Optional<Currency<?>> opCurrency = AccountInterface
+                            .getManager()
                             .getCurrencies()
                             .parallelStream()
                             .filter(cur -> cur.getPlugin().getName().equals(pluginName))
                             .filter(cur -> cur.getKeyName().equals(currencyName))
                             .findAny();
                     if (opCurrency.isEmpty()) {
-                        EcoToolPlugin.getInstance()
+                        EcoToolPlugin
+                                .getInstance()
                                 .getLogger()
-                                .warning("Could not find the currency of "
-                                        + pluginName
-                                        + "."
-                                        + currencyName
-                                        + " in yaml " + configuration.getName() + ". Skipping");
+                                .warning("Could not find the currency of " + pluginName + "." + currencyName + " in yaml " + configuration.getName()
+                                        + ". Skipping");
                         continue;
                     }
                     balance.put(opCurrency.get(), BigDecimal.valueOf(amount));
@@ -146,7 +138,8 @@ public class BankSerializer implements Serializer<EcoBankAccount> {
             }
         }
         PlayerAccount owner = AccountInterface.getManager().getPlayerAccount(bankOwnerId);
-        EcoBankAccount account = new EcoBankAccount(new PlayerBankAccountBuilder().setAccount(owner)
+        EcoBankAccount account = new EcoBankAccount(new PlayerBankAccountBuilder()
+                .setAccount(owner)
                 .setName(bankName)
                 .setAccountHolders(accounts)
                 .setInitialBalance(balance));

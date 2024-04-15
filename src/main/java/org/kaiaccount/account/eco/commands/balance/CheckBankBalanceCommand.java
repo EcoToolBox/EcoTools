@@ -5,32 +5,43 @@ import org.jetbrains.annotations.NotNull;
 import org.kaiaccount.AccountInterface;
 import org.kaiaccount.account.eco.commands.argument.account.PlayerBankArgument;
 import org.kaiaccount.account.eco.permission.Permissions;
+import org.kaiaccount.account.inter.type.named.bank.BankPermission;
 import org.kaiaccount.account.inter.type.named.bank.player.PlayerBankAccount;
 import org.mose.command.ArgumentCommand;
 import org.mose.command.CommandArgument;
+import org.mose.command.CommandArgumentResult;
 import org.mose.command.arguments.operation.ExactArgument;
 import org.mose.command.arguments.operation.permission.PermissionOrArgument;
 import org.mose.command.context.CommandContext;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public class CheckBankBalanceCommand implements ArgumentCommand {
 
     public static final CommandArgument<String> BANK = new ExactArgument("bank");
-    public static final CommandArgument<PlayerBankAccount> BANK_ACCOUNT =
-            new PermissionOrArgument<>("value", sender -> (sender.hasPermission(
-                    Permissions.BALANCE_OTHER.getPermissionNode())),
-                    new PlayerBankArgument("value", (context, argument) -> AccountInterface.getManager()
-                            .getPlayerAccounts()
-                            .parallelStream()
-                            .flatMap(account -> account.getBanks().parallelStream())
-                            .toList()), new PlayerBankArgument("value", (context, argument) -> {
+    public static final CommandArgument<PlayerBankAccount> BANK_ACCOUNT = new PermissionOrArgument<>("value",
+            sender -> (sender.hasPermission(Permissions.BALANCE_OTHER.getPermissionNode())),
+            new PlayerBankArgument("value", (context, argument) -> {
+                List<PlayerBankAccount> allBanks = AccountInterface
+                        .getManager()
+                        .getPlayerAccounts()
+                        .parallelStream()
+                        .flatMap(account -> account.getBanks().parallelStream())
+                        .toList();
+                return CommandArgumentResult.from(argument, allBanks);
+            }),
+            new PlayerBankArgument("value", (context, argument) -> {
                 if (!(context.getSource() instanceof OfflinePlayer player)) {
                     throw new RuntimeException("Player only command");
                 }
-                return AccountInterface.getManager().getPlayerAccount(player).getBanks();
+                Collection<PlayerBankAccount> viewableBanks = AccountInterface
+                        .getManager()
+                        .getPlayerAccount(player)
+                        .getAttachedBankByPermission(BankPermission.SEE);
+                return CommandArgumentResult.from(argument, viewableBanks);
             }));
 
     @Override

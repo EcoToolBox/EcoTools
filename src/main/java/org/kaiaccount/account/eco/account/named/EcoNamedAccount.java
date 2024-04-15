@@ -45,87 +45,30 @@ public class EcoNamedAccount extends AbstractNamedAccount implements Serializabl
         return new File("plugins/eco/named/" + EcoToolPlugin.getInstance().getName() + "/" + this.getAccountName() + ".yml");
     }
 
+    @Override
+    public boolean isSaving() {
+        return this.shouldSave;
+    }
+
+    @Override
+    public void setSaving(boolean saving) {
+        this.shouldSave = saving;
+    }
+
+    @Override
+    public TransactionHistory getTransactionHistory() {
+        return this.history;
+    }
+
     @NotNull
     @Override
-    public CompletableFuture<TransactionResult> multipleTransaction(
-            @NotNull Function<IsolatedAccount, CompletableFuture<? extends TransactionResult>>... transactions) {
+    public CompletableFuture<TransactionResult> multipleTransaction(@NotNull Function<IsolatedAccount, CompletableFuture<? extends TransactionResult>>... transactions) {
         this.shouldSave = false;
         CompletableFuture<TransactionResult> future = super.multipleTransaction(transactions);
         future.thenAccept(result -> {
             this.shouldSave = true;
             saveAccount(result);
         });
-        return future;
-    }
-
-    @NotNull
-    @Override
-    public SingleTransactionResult withdrawSynced(@NotNull Payment payment) {
-        SingleTransactionResult result = super.withdrawSynced(payment);
-        saveAccount(result);
-        return result;
-    }
-
-    @NotNull
-    @Override
-    public CompletableFuture<SingleTransactionResult> withdraw(@NotNull Payment payment) {
-        return this.saveOnFuture(super.withdraw(payment));
-    }
-
-    @NotNull
-    @Override
-    public SingleTransactionResult depositSynced(@NotNull Payment payment) {
-        SingleTransactionResult result = super.depositSynced(payment);
-        saveAccount(result);
-        return result;
-    }
-
-    @NotNull
-    @Override
-    public CompletableFuture<SingleTransactionResult> deposit(@NotNull Payment payment) {
-        return this.saveOnFuture(super.deposit(payment));
-    }
-
-    @NotNull
-    @Override
-    public SingleTransactionResult setSynced(@NotNull Payment payment) {
-        return SyncedEcoAccount.super.setSynced(payment);
-    }
-
-    @NotNull
-    @Override
-    public CompletableFuture<SingleTransactionResult> set(@NotNull Payment payment) {
-        return SyncedEcoAccount.super.set(payment);
-    }
-
-    @NotNull
-    @Override
-    public SingleTransactionResult refundSynced(@NotNull Transaction payment) {
-        SingleTransactionResult result = super.refundSynced(payment);
-        saveAccount(result);
-        return result;
-    }
-
-    @NotNull
-    @Override
-    public CompletableFuture<SingleTransactionResult> refund(@NotNull Transaction payment) {
-        return this.saveOnFuture(super.refund(payment));
-    }
-
-    @Override
-    public void forceSetSynced(@NotNull Payment payment) {
-        super.forceSetSynced(payment);
-        saveAccount(CommonUtils.setOverrideResult(this, payment));
-    }
-
-    @NotNull
-    @Override
-    public CompletableFuture<Void> forceSet(@NotNull Payment payment) {
-        return super.forceSet(payment).thenAccept(v -> saveAccount(null));
-    }
-
-    private <T extends TransactionResult> CompletableFuture<T> saveOnFuture(@NotNull CompletableFuture<T> future) {
-        future.thenAccept(this::saveAccount);
         return future;
     }
 
@@ -148,18 +91,74 @@ public class EcoNamedAccount extends AbstractNamedAccount implements Serializabl
         }
     }
 
+    private <T extends TransactionResult> CompletableFuture<T> saveOnFuture(@NotNull CompletableFuture<T> future) {
+        future.thenAccept(this::saveAccount);
+        return future;
+    }
+
+    @NotNull
     @Override
-    public boolean isSaving() {
-        return this.shouldSave;
+    public CompletableFuture<SingleTransactionResult> withdraw(@NotNull Payment payment) {
+        return this.saveOnFuture(super.withdraw(payment));
+    }
+
+    @NotNull
+    @Override
+    public SingleTransactionResult withdrawSynced(@NotNull Payment payment) {
+        SingleTransactionResult result = super.withdrawSynced(payment);
+        saveAccount(result);
+        return result;
+    }
+
+    @NotNull
+    @Override
+    public CompletableFuture<SingleTransactionResult> deposit(@NotNull Payment payment) {
+        return this.saveOnFuture(super.deposit(payment));
+    }
+
+    @NotNull
+    @Override
+    public SingleTransactionResult depositSynced(@NotNull Payment payment) {
+        SingleTransactionResult result = super.depositSynced(payment);
+        saveAccount(result);
+        return result;
+    }
+
+    @NotNull
+    @Override
+    public CompletableFuture<SingleTransactionResult> set(@NotNull Payment payment) {
+        return SyncedEcoAccount.super.set(payment);
+    }
+
+    @NotNull
+    @Override
+    public SingleTransactionResult setSynced(@NotNull Payment payment) {
+        return SyncedEcoAccount.super.setSynced(payment);
+    }
+
+    @NotNull
+    @Override
+    public CompletableFuture<SingleTransactionResult> refund(@NotNull Transaction payment) {
+        return this.saveOnFuture(super.refund(payment));
+    }
+
+    @NotNull
+    @Override
+    public CompletableFuture<Void> forceSet(@NotNull Payment payment) {
+        return super.forceSet(payment).thenAccept(v -> saveAccount(null));
+    }
+
+    @NotNull
+    @Override
+    public SingleTransactionResult refundSynced(@NotNull Transaction payment) {
+        SingleTransactionResult result = super.refundSynced(payment);
+        saveAccount(result);
+        return result;
     }
 
     @Override
-    public void setSaving(boolean saving) {
-        this.shouldSave = saving;
-    }
-
-    @Override
-    public TransactionHistory getTransactionHistory() {
-        return this.history;
+    public void forceSetSynced(@NotNull Payment payment) {
+        super.forceSetSynced(payment);
+        saveAccount(CommonUtils.setOverrideResult(this, payment));
     }
 }

@@ -1,5 +1,6 @@
 package org.kaiaccount.account.eco.commands.transaction;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +26,7 @@ import org.mose.command.exception.ArgumentException;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -36,13 +38,12 @@ public class TransactionsRangeCommand implements ArgumentCommand {
     public static final char DEPOSIT_ARROW = '←';
     public static final char SET_ARROW = '⤓';
 
-    private final CommandArgument<OfflinePlayer> player = new OptionalArgument<>(
-            new PermissionOrArgument<>(
-                    "user",
-                    source -> source.hasPermission(Permissions.HISTORY_OTHER.getPermissionNode()),
-                    new UserArgument("user", u -> true)), new ParseCommandArgument<>() {
+    private final CommandArgument<OfflinePlayer> player = new OptionalArgument<>(new PermissionOrArgument<>("user",
+            source -> source.hasPermission(Permissions.HISTORY_OTHER.getPermissionNode()),
+            new UserArgument("user", (command, argument) -> Arrays.stream(Bukkit.getOfflinePlayers()))), new ParseCommandArgument<>() {
         @Override
-        public @NotNull CommandArgumentResult<OfflinePlayer> parse(@NotNull CommandContext context, @NotNull ArgumentContext argument) throws ArgumentException {
+        public @NotNull CommandArgumentResult<OfflinePlayer> parse(@NotNull CommandContext context, @NotNull ArgumentContext argument)
+                throws ArgumentException {
             if (context.getSource() instanceof OfflinePlayer user) {
                 return CommandArgumentResult.from(argument, 0, user);
             }
@@ -79,6 +80,22 @@ public class TransactionsRangeCommand implements ArgumentCommand {
     });
     private final CommandArgument<Duration> range = new DateRangeArgument("id", startDate, -1);
     private final CommandArgument<Integer> page = new OptionalArgument<>(new IntegerArgument("page"), 1);
+
+    private char arrow(TransactionType type) {
+        return switch (type) {
+            case SET -> SET_ARROW;
+            case DEPOSIT -> DEPOSIT_ARROW;
+            case WITHDRAW -> WITHDRAW_ARROW;
+        };
+    }
+
+    private ChatColor color(TransactionType type) {
+        return switch (type) {
+            case SET -> ChatColor.YELLOW;
+            case DEPOSIT -> ChatColor.GREEN;
+            case WITHDRAW -> ChatColor.RED;
+        };
+    }
 
     @Override
     public @NotNull List<CommandArgument<?>> getArguments() {
@@ -119,32 +136,15 @@ public class TransactionsRangeCommand implements ArgumentCommand {
                 .limit(PAGE_SIZE)
                 .toList();
         commandContext.getSource().sendMessage("|---|Page: " + page + "|---|");
-        list
-                .forEach(entry -> {
-                    String target = entry.getFromName().or(entry::getToName).orElseGet(entry::getPluginName);
-                    String amount = entry.getCurrency().formatName(entry.getAmount());
-                    char arrow = arrow(entry.getTransactionType());
-                    String reason = entry.getReason().map(theReason -> ": " + theReason).orElse("");
-                    String message = amount + " " + arrow + " " + target + reason;
-                    ChatColor colour = color(entry.getTransactionType());
-                    commandContext.getSource().sendMessage(colour + message);
-                });
+        list.forEach(entry -> {
+            String target = entry.getFromName().or(entry::getToName).orElseGet(entry::getPluginName);
+            String amount = entry.getCurrency().formatName(entry.getAmount());
+            char arrow = arrow(entry.getTransactionType());
+            String reason = entry.getReason().map(theReason -> ": " + theReason).orElse("");
+            String message = amount + " " + arrow + " " + target + reason;
+            ChatColor colour = color(entry.getTransactionType());
+            commandContext.getSource().sendMessage(colour + message);
+        });
         return true;
-    }
-
-    private ChatColor color(TransactionType type) {
-        return switch (type) {
-            case SET -> ChatColor.YELLOW;
-            case DEPOSIT -> ChatColor.GREEN;
-            case WITHDRAW -> ChatColor.RED;
-        };
-    }
-
-    private char arrow(TransactionType type) {
-        return switch (type) {
-            case SET -> SET_ARROW;
-            case DEPOSIT -> DEPOSIT_ARROW;
-            case WITHDRAW -> WITHDRAW_ARROW;
-        };
     }
 }

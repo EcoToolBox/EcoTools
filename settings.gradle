@@ -5,3 +5,4 @@
 rootProject.name = 'eco_tools'
 
 include "AccountInterface"
+include "BukkitCommandSystem"

@@ -12,11 +12,13 @@ import org.kaiaccount.account.inter.transfer.result.SingleTransactionResult;
 import org.kaiaccount.account.inter.transfer.result.failed.FailedTransactionResult;
 import org.kaiaccount.account.inter.type.Account;
 import org.kaiaccount.account.inter.type.AccountType;
+import org.kaiaccount.account.inter.type.named.bank.BankPermission;
 import org.kaiaccount.account.inter.type.named.bank.player.PlayerBankAccount;
 import org.mose.command.ArgumentCommand;
 import org.mose.command.CommandArgument;
 import org.mose.command.arguments.operation.ExactArgument;
 import org.mose.command.context.CommandContext;
+import org.mose.command.exception.ArgumentException;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +26,9 @@ import java.util.concurrent.CompletableFuture;
 
 public class PayFromOwnBankCommand implements ArgumentCommand {
 
-    public static final PlayerBankArgument FROM = PlayerBankArgument.senderBanks("fromAccount");
+    public static final PlayerBankArgument FROM = PlayerBankArgument.banksWithPermission("fromAccount",
+            BankPermission.TAKE,
+            source -> new ArgumentException("player only command"));
 
     public static final AccountArgument<Account> TO = AccountArgument.allAccounts("toAccount");
 
@@ -65,15 +69,15 @@ public class PayFromOwnBankCommand implements ArgumentCommand {
             CompletableFuture<SingleTransactionResult> deposit = isolatedTo.deposit(payment.setFrom(from).build(EcoToolPlugin.getInstance()));
             CompletableFuture<SingleTransactionResult> withdraw = isolatedFrom.withdraw(payment.build(EcoToolPlugin.getInstance()));
             return List.of(deposit, withdraw);
-        }, fromType, toType)
-                .start()
-                .thenAccept(result -> {
-                    if (result instanceof FailedTransactionResult failedTransactionResult) {
-                        commandContext.getSource().sendMessage("Transaction failed: No money has left the account: Failed due to " + failedTransactionResult.getReason());
-                        return;
-                    }
-                    commandContext.getSource().sendMessage("Transaction successful");
-                });
+        }, fromType, toType).start().thenAccept(result -> {
+            if (result instanceof FailedTransactionResult failedTransactionResult) {
+                commandContext
+                        .getSource()
+                        .sendMessage("Transaction failed: No money has left the account: Failed due to " + failedTransactionResult.getReason());
+                return;
+            }
+            commandContext.getSource().sendMessage("Transaction successful");
+        });
         commandContext.getSource().sendMessage("Payment request sent");
         return true;
     }
