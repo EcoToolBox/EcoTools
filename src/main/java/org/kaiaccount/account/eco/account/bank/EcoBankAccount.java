@@ -28,15 +28,34 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
-public class EcoBankAccount extends AbstractPlayerBankAccount
-        implements PlayerBankAccount, SyncedEcoAccount<EcoBankAccount>, Serializable<EcoBankAccount> {
+public class EcoBankAccount extends AbstractPlayerBankAccount implements PlayerBankAccount, SyncedEcoAccount<EcoBankAccount>, Serializable<EcoBankAccount> {
 
     private final TransactionHistory history;
-    private boolean canSave;
+    private boolean shouldSave = true;
 
     public EcoBankAccount(@NotNull PlayerBankAccountBuilder builder) {
         super(builder);
         this.history = new TransactionHistory(this);
+    }
+
+    @Override
+    public void addAccount(@NotNull UUID uuid, Collection<BankPermission> permissions) {
+        super.addAccount(uuid, permissions);
+        try {
+            this.save();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void removeAccount(@NotNull UUID uuid) {
+        super.removeAccount(uuid);
+        try {
+            this.save();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -46,11 +65,53 @@ public class EcoBankAccount extends AbstractPlayerBankAccount
 
     @Override
     public @NotNull File getFile() {
-        return new File("plugins/eco/players/"
-                + this.getAccountHolder().getPlayer().getUniqueId()
-                + "/"
-                + this.getAccountName()
-                + ".yml");
+        return new File("plugins/eco/players/EcoTools/Bank/" + this.getAccountHolder().getPlayer().getUniqueId() + "/" + this.getAccountName() + ".yml");
+    }
+
+    @Override
+    public boolean isSaving() {
+        return this.shouldSave;
+    }
+
+    @Override
+    public void setSaving(boolean saving) {
+        this.shouldSave = saving;
+    }
+
+    @Override
+    public TransactionHistory getTransactionHistory() {
+        return this.history;
+    }
+
+    @NotNull
+    @Override
+    public CompletableFuture<TransactionResult> multipleTransaction(@NotNull Function<IsolatedAccount, CompletableFuture<? extends TransactionResult>>... transactions) {
+        return this.saveOnFuture(super.multipleTransaction(transactions));
+    }
+
+    private void saveBank(@NotNull TransactionResult result) {
+        if (result instanceof FailedTransactionResult) {
+            //no changes
+            return;
+        }
+        List<SimpleEntryTransactionHistory> transactions = result
+                .getTransactions()
+                .parallelStream()
+                .filter(transaction -> transaction.getTarget().equals(EcoBankAccount.this))
+                .map(transaction -> new EntryTransactionHistoryBuilder().fromTransaction(transaction).build())
+                .toList();
+        this.history.addAll(transactions);
+
+        try {
+            save();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private <T extends TransactionResult> CompletableFuture<T> saveOnFuture(@NotNull CompletableFuture<T> future) {
+        future.thenAccept(this::saveBank);
+        return future;
     }
 
     @NotNull
@@ -118,72 +179,5 @@ public class EcoBankAccount extends AbstractPlayerBankAccount
     public void forceSetSynced(@NotNull Payment payment) {
         super.forceSetSynced(payment);
         saveBank(CommonUtils.setOverrideResult(this, payment));
-    }
-
-    @NotNull
-    @Override
-    public CompletableFuture<TransactionResult> multipleTransaction(
-            @NotNull Function<IsolatedAccount, CompletableFuture<? extends TransactionResult>>... transactions) {
-        return this.saveOnFuture(super.multipleTransaction(transactions));
-    }
-
-    @Override
-    public void addAccount(@NotNull UUID uuid, Collection<BankPermission> permissions) {
-        super.addAccount(uuid, permissions);
-        try {
-            this.save();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void removeAccount(@NotNull UUID uuid) {
-        super.removeAccount(uuid);
-        try {
-            this.save();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private <T extends TransactionResult> CompletableFuture<T> saveOnFuture(@NotNull CompletableFuture<T> future) {
-        future.thenAccept(this::saveBank);
-        return future;
-    }
-
-    private void saveBank(@NotNull TransactionResult result) {
-        if (result instanceof FailedTransactionResult) {
-            //no changes
-            return;
-        }
-        List<SimpleEntryTransactionHistory> transactions = result
-                .getTransactions()
-                .parallelStream()
-                .filter(transaction -> transaction.getTarget().equals(EcoBankAccount.this))
-                .map(transaction -> new EntryTransactionHistoryBuilder().fromTransaction(transaction).build())
-                .toList();
-        this.history.addAll(transactions);
-
-        try {
-            save();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public boolean isSaving() {
-        return this.canSave;
-    }
-
-    @Override
-    public void setSaving(boolean saving) {
-        this.canSave = saving;
-    }
-
-    @Override
-    public TransactionHistory getTransactionHistory() {
-        return this.history;
     }
 }

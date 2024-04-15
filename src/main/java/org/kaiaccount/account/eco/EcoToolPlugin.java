@@ -36,20 +36,69 @@ public class EcoToolPlugin extends JavaPlugin {
         plugin = this;
     }
 
-    @Deprecated
-    public static EcoToolPlugin getPlugin() {
-        return getInstance();
+    private <T extends Serializable<T>> boolean load(File folder, Serializer<T> serializer, Consumer<T> onEach) {
+        File[] files = folder.listFiles();
+        if (files == null) {
+            return false;
+        }
+        Arrays.stream(files).parallel().filter(File::isFile).map(file -> {
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+            try {
+                return serializer.deserialize(config);
+            } catch (IOException e) {
+                System.err.println("Failed to load file: " + file.getPath() + " with " + serializer.getClass().getSimpleName());
+                e.printStackTrace();
+                //noinspection ReturnOfNull
+                return null;
+            }
+        }).filter(Objects::nonNull).forEach(onEach);
+        return true;
     }
 
-    public static EcoToolPlugin getInstance() {
-        return plugin;
+    private void loadBankAccounts() {
+        for (PlayerAccount account : AccountInterface.getManager().getPlayerAccounts()) {
+            File folder = new File("plugins/eco/players/" + this.getName() + "/Bank/" + account.getPlayer().getUniqueId() + "/");
+            load(folder, EcoSerializers.BANK, account::registerBank);
+        }
+    }
+
+    private boolean loadCurrencies() {
+        File folder = new File("plugins/eco/currencies/" + this.getName() + "/");
+        return load(folder, EcoSerializers.CURRENCY, (c) -> AccountInterface.getManager().registerCurrency(c));
+    }
+
+    private boolean loadNamedAccounts() {
+        File folder = new File("plugins/eco/named/" + this.getName() + "/");
+        return load(folder, EcoSerializers.NAMED_ACCOUNT, (account) -> AccountInterface.getManager().registerNamedAccount(account));
+    }
+
+    public EcoPlayerAccount loadPlayerAccount(@NotNull UUID player) throws IllegalStateException {
+        File file = new File("plugins/eco/players/" + this.getName() + "/" + player + ".yml");
+        if (!file.exists()) {
+            throw new IllegalStateException("No file for player");
+        }
+        try {
+            return loadSingle(file, EcoSerializers.PLAYER);
+        } catch (IOException e) {
+            throw new RuntimeException("load error", e);
+        }
+    }
+
+    private boolean loadPlayerAccounts() {
+        File folder = new File("plugins/eco/players/" + this.getName() + "/");
+        return load(folder, EcoSerializers.PLAYER, (player) -> AccountInterface.getManager().registerPlayerAccount(player));
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private <T extends Serializable<T>> T loadSingle(@NotNull File file, @NotNull Serializer<T> serializer) throws IOException {
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+        return serializer.deserialize(config);
     }
 
     @Override
     public void onLoad() {
         VaultEmulationUtils.loadService(this);
-        Bukkit.getServicesManager()
-                .register(AccountInterfaceManager.class, new EcoManager(), this, ServicePriority.Normal);
+        Bukkit.getServicesManager().register(AccountInterfaceManager.class, new EcoManager(), this, ServicePriority.Normal);
         loadCurrencies();
     }
 
@@ -86,68 +135,12 @@ public class EcoToolPlugin extends JavaPlugin {
         bCommand.setTabCompleter(wrapper);
     }
 
-    private void loadBankAccounts() {
-        for (PlayerAccount account : AccountInterface.getManager().getPlayerAccounts()) {
-            File folder = new File("plugins/eco/players/" + account.getPlayer().getUniqueId() + "/");
-            load(folder, EcoSerializers.BANK, account::registerBank);
-        }
+    public static EcoToolPlugin getInstance() {
+        return plugin;
     }
 
-    private boolean loadPlayerAccounts() {
-        File folder = new File("plugins/eco/players/" + this.getName() + "/");
-        return load(folder, EcoSerializers.PLAYER,
-                (player) -> AccountInterface.getManager().registerPlayerAccount(player));
-    }
-
-    private boolean loadNamedAccounts() {
-        File folder = new File("plugins/eco/named/" + this.getName() + "/");
-        return load(folder, EcoSerializers.NAMED_ACCOUNT, (account) -> AccountInterface.getManager().registerNamedAccount(account));
-    }
-
-    public EcoPlayerAccount loadPlayerAccount(@NotNull UUID player) throws IllegalStateException {
-        File file = new File("plugins/eco/players/" + this.getName() + "/" + player + ".yml");
-        if (!file.exists()) {
-            throw new IllegalStateException("No file for player");
-        }
-        try {
-            return loadSingle(file, EcoSerializers.PLAYER);
-        } catch (IOException e) {
-            throw new RuntimeException("load error", e);
-        }
-    }
-
-    private boolean loadCurrencies() {
-        File folder = new File("plugins/eco/currencies/" + this.getName() + "/");
-        return load(folder, EcoSerializers.CURRENCY, (c) -> AccountInterface.getManager().registerCurrency(c));
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private <T extends Serializable<T>> T loadSingle(@NotNull File file, @NotNull Serializer<T> serializer) throws
-            IOException {
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-        return serializer.deserialize(config);
-    }
-
-    private <T extends Serializable<T>> boolean load(File folder, Serializer<T> serializer, Consumer<T> onEach) {
-        File[] files = folder.listFiles();
-        if (files == null) {
-            return false;
-        }
-        Arrays
-                .stream(files)
-                .parallel()
-                .map(file -> {
-                    YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-                    try {
-                        return serializer.deserialize(config);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        //noinspection ReturnOfNull
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .forEach(onEach);
-        return true;
+    @Deprecated
+    public static EcoToolPlugin getPlugin() {
+        return getInstance();
     }
 }

@@ -16,6 +16,8 @@ public enum Permissions {
     PAY_FROM("eco.cmd.pay.from", false),
     CREATE_BANK_ACCOUNT("eco.cmd.create.player.bank.self", true),
     CREATE_NAMED_ACCOUNT("eco.cmd.create.named", true),
+    GRANT_BANK_ACCESS_SELF("eco.cmd.give.player.bank.self", true),
+    GRANT_BANK_ACCESS_OTHER("eco.cmd.give.player.bank.other", false),
     HISTORY_SELF("eco.cmd.transactions.self", true),
     HISTORY_OTHER("eco.cmd.transactions.other", false),
 	DELETE_BANK_OTHER("eco.cmd.delete.player.bank.other", false);

@@ -1,3 +1,6 @@
 [submodule "AccountInterface"]
 	path = AccountInterface
 	url = https://github.com/EconToolBox/AccountInterface.git
+[submodule "BukkitCommandSystem"]
+	path = BukkitCommandSystem
+	url = https://github.com/mosemister/BukkitCommandSystem.git
