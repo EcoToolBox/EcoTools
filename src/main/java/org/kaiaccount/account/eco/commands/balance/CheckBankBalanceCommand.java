@@ -1,8 +1,6 @@
 package org.kaiaccount.account.eco.commands.balance;
 
-import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
-import org.kaiaccount.AccountInterface;
 import org.kaiaccount.account.eco.commands.argument.account.PlayerBankArgument;
 import org.kaiaccount.account.eco.permission.Permissions;
 import org.kaiaccount.account.inter.type.named.bank.player.PlayerBankAccount;
@@ -18,20 +16,11 @@ import java.util.Optional;
 
 public class CheckBankBalanceCommand implements ArgumentCommand {
 
-    public static final CommandArgument<String> BANK = new ExactArgument("bank");
-    public static final CommandArgument<PlayerBankAccount> BANK_ACCOUNT =
-            new PermissionOrArgument<>("value", sender -> (sender.hasPermission(
+    public static final ExactArgument BANK = new ExactArgument("bank");
+    public static final PermissionOrArgument<PlayerBankAccount> BANK_ACCOUNT = new PermissionOrArgument<>("value",
+            sender -> (sender.hasPermission(
                     Permissions.BALANCE_OTHER.getPermissionNode())),
-                    new PlayerBankArgument("value", (context, argument) -> AccountInterface.getManager()
-                            .getPlayerAccounts()
-                            .parallelStream()
-                            .flatMap(account -> account.getBanks().parallelStream())
-                            .toList()), new PlayerBankArgument("value", (context, argument) -> {
-                if (!(context.getSource() instanceof OfflinePlayer player)) {
-                    throw new RuntimeException("Player only command");
-                }
-                return AccountInterface.getManager().getPlayerAccount(player).getBanks();
-            }));
+            PlayerBankArgument.allPlayerBanks("value"), PlayerBankArgument.senderBanks("value"));
 
     @Override
     public @NotNull List<CommandArgument<?>> getArguments() {
