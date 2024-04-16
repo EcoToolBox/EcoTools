@@ -5,26 +5,18 @@ import org.kaiaccount.AccountInterface;
 import org.kaiaccount.account.inter.type.Account;
 import org.mose.command.CommandArgument;
 import org.mose.command.CommandArgumentResult;
-import org.mose.command.ParseCommandArgument;
-import org.mose.command.SuggestCommandArgument;
 import org.mose.command.arguments.collection.source.UserArgument;
 import org.mose.command.arguments.operation.MappedArgumentWrapper;
 import org.mose.command.context.ArgumentContext;
 import org.mose.command.context.CommandContext;
 import org.mose.command.exception.ArgumentException;
 
-import org.mose.command.context.CommandArgumentContext;
-import org.mose.command.context.CommandContext;
-import org.mose.command.exception.ArgumentException;
-
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class AccountArgument<A extends Account> implements CommandArgument<A> {
 
@@ -46,15 +38,6 @@ public class AccountArgument<A extends Account> implements CommandArgument<A> {
         }
         this.id = id;
         this.arguments.addAll(argument);
-    }
-
-    public static AccountArgument<Account> allAccounts(String id) {
-        return new AccountArgument<>(id,
-                new NamedAccountArgument("account"),
-                PlayerBankArgument.allPlayerBanks("bank"),
-                new MappedArgumentWrapper<>(
-                        new UserArgument("player", u -> true),
-                        user -> AccountInterface.getManager().getPlayerAccount(user)));
     }
 
     @Override
@@ -90,5 +73,12 @@ public class AccountArgument<A extends Account> implements CommandArgument<A> {
         }
         Optional<CommandArgument<? extends A>> opArgument = this.arguments.parallelStream().filter(arg -> arg.getId().equalsIgnoreCase(peek)).findAny();
         return opArgument.map(commandArgument -> commandArgument.suggest(commandContext, argument)).orElse(Collections.emptyList());
+    }
+
+    public static AccountArgument<Account> allAccounts(String id) {
+        return new AccountArgument<>(id,
+                new NamedAccountArgument("account"),
+                PlayerBankArgument.allPlayerBanks("bank"),
+                new MappedArgumentWrapper<>(UserArgument.allButSource("player"), user -> AccountInterface.getManager().getPlayerAccount(user)));
     }
 }

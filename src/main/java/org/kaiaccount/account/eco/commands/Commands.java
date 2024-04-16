@@ -5,6 +5,7 @@ import org.kaiaccount.account.eco.commands.balance.CheckBankBalanceCommand;
 import org.kaiaccount.account.eco.commands.balance.CheckNamedAccountBalanceCommand;
 import org.kaiaccount.account.eco.commands.balance.CheckPlayerBalanceCommand;
 import org.kaiaccount.account.eco.commands.bank.CreatePlayerBankAccountCommand;
+import org.kaiaccount.account.eco.commands.bank.account.PlayerBankAccessCommands;
 import org.kaiaccount.account.eco.commands.currency.AddCurrencyCommand;
 import org.kaiaccount.account.eco.commands.currency.RemoveCurrencyCommand;
 import org.kaiaccount.account.eco.commands.currency.SetDefaultCurrencyCommand;
@@ -19,6 +20,7 @@ import org.kaiaccount.account.eco.commands.pay.PayNamedCommand;
 import org.kaiaccount.account.eco.commands.pay.PayPlayerCommand;
 import org.kaiaccount.account.eco.commands.pay.from.PayFromAnyCommand;
 import org.kaiaccount.account.eco.commands.transaction.TransactionsRangeCommand;
+import org.mose.command.ArgumentCommand;
 
 public final class Commands {
 
@@ -41,6 +43,8 @@ public final class Commands {
     public static final CreateNamedAccountCommand CREATE_NAMED_ACCOUNT = new CreateNamedAccountCommand();
     public static final RemoveNamedAccountCommand REMOVE_NAMED_ACCOUNT = new RemoveNamedAccountCommand();
     public static final TransactionsRangeCommand TRANSACTIONS = new TransactionsRangeCommand();
+    public static final ArgumentCommand GRANT_BANK_PERMISSION = PlayerBankAccessCommands.addPlayerCommand();
+    public static final ArgumentCommand REMOVE_BANK_PERMISSION = PlayerBankAccessCommands.removePlayerCommand();
 
     private Commands() {
         throw new RuntimeException("Dont do that");
