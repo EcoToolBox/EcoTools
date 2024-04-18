@@ -7,85 +7,60 @@ import org.kaiaccount.account.eco.message.type.MessageArgument;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public abstract class AbstractMessage implements Message {
 
-	private @Nullable String message;
+    private @Nullable String message;
 
-	public AbstractMessage(@Nullable String message) {
-		this.message = message;
-	}
+    public AbstractMessage() {
+        this(null);
+    }
 
-	protected @NotNull String getProcessedMessage(@NotNull Map<Object, String> values) {
-		return this.getProcessedMessage(this.getOverridingMessageElse(), values);
-	}
+    public AbstractMessage(@Nullable String message) {
+        this.message = message;
+    }
 
-	protected @NotNull String getProcessedMessage(@NotNull CharSequence message, @NotNull Map<Object, String> values) {
-		StringBuilder builder = new StringBuilder();
-		String argumentBuffer = null;
-		for (int i = 0; i < message.length(); i++) {
-			char at = message.charAt(i);
-			if (at != '%') {
-				if (argumentBuffer == null) {
-					builder.append(at);
-					continue;
-				}
-				argumentBuffer = argumentBuffer + at;
-				continue;
-			}
-			if (argumentBuffer == null) {
-				argumentBuffer = at + "";
-				continue;
-			}
-			String withoutPercent = argumentBuffer.substring(1);
-			Optional<MessageArgument<?>> opArgument = this.getArgument(withoutPercent);
-			if (opArgument.isEmpty()) {
-				builder.append(argumentBuffer);
-				continue;
-			}
-			Collection<Object> possibleValues = values.entrySet()
-					.parallelStream()
-					.filter(entry -> opArgument.get().getClassType().isInstance(entry.getKey()))
-					.map(
-							Map.Entry::getKey)
-					.toList();
-			Object value;
-			if (possibleValues.size() > 1) {
-				Optional<Object> opValue = values.entrySet()
-						.parallelStream()
-						.filter(entry -> withoutPercent.startsWith(entry.getValue()))
-						.findAny()
-						.map(Map.Entry::getValue);
-				if (opValue.isEmpty()) {
-					i++;
-					continue;
-				}
-				value = opValue.get();
-			} else if (possibleValues.isEmpty()) {
-				i++;
-				continue;
-			} else {
-				value = possibleValues.iterator().next();
-			}
-			String valueString = process(opArgument.get(), value);
-			builder.append(valueString);
-			argumentBuffer = null;
-		}
-		return builder.toString();
-	}
+    protected <O, R extends O> @NotNull Stream<MessageArgument<R>> getMessageArgumentIdFor(O value) {
+        Collection<MessageArgument<?>> arguments = this.getArguments();
+        String message = this.getOverridingMessageElse();
+        return arguments
+                .stream()
+                .filter(argument -> message.contains("%" + argument.getArgumentHandler() + "%"))
+                .filter(argument -> argument.getClassType().isInstance(value))
+                .map(argument -> (MessageArgument<R>) argument);
+    }
 
-	private <T> @NotNull String process(MessageArgument<T> argument, Object value) {
-		return argument.apply((T) value);
-	}
+    @NotNull
+    @Override
+    public Optional<String> getOverridingMessage() {
+        return Optional.ofNullable(this.message);
+    }
 
-	@NotNull
-	@Override
-	public Optional<String> getOverridingMessage() {
-		return Optional.ofNullable(this.message);
-	}
+    @Override
+    public void setOverridingMessage(@Nullable String message) {
+        this.message = message;
+    }
 
-	@Override
-	public void setOverridingMessage(@Nullable String message) {
-		this.message = message;
-	}
+    protected @NotNull String getProcessedMessage(@NotNull String message, @NotNull Map<MessageArgument<?>, Object> values) {
+        for (Map.Entry<MessageArgument<?>, Object> entry : values.entrySet()) {
+            String targetId = "%" + entry.getKey().getArgumentHandler() + "%";
+            if (message.contains(targetId)) {
+                message = replace(message, entry.getKey(), entry.getValue());
+            }
+        }
+        return message;
+    }
+
+    protected @NotNull String getProcessedMessage(@NotNull Map<MessageArgument<?>, Object> values) {
+        return this.getProcessedMessage(this.getOverridingMessageElse(), values);
+    }
+
+    private <T> @NotNull String process(MessageArgument<T> argument, Object value) {
+        return argument.apply((T) value);
+    }
+
+    private <T> String replace(String message, MessageArgument<T> argument, Object value) {
+        return message.replaceAll("%" + argument.getArgumentHandler() + "%", argument.apply((T) value));
+    }
 }

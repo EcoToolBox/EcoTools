@@ -92,8 +92,25 @@ public class PlayerBankArgument implements CommandArgument<PlayerBankAccount> {
         return streamBank(id, (command, argument, stream) -> stream);
     }
 
+    public static @NotNull PlayerBankArgument banksWithAllPermissions(String id, ParseCommandArgument<UUID> playerIdGetter, BankPermission... bankPermissions) {
+        return streamBank(id, (context, argument, stream) -> {
+            UUID playerId = playerIdGetter.parse(context, argument).value();
+            return stream.filter((bank) -> {
+                Collection<BankPermission> permissions = bank.getAccountPermissions(playerId);
+                return permissions.containsAll(Arrays.asList(bankPermissions));
+            });
+        });
+    }
+
+    public static @NotNull PlayerBankArgument banksWithPermission(String id, ParseCommandArgument<UUID> playerIdGetter, BankPermission permission) {
+        return streamBank(id, (context, argument, stream) -> {
+            UUID playerId = playerIdGetter.parse(context, argument).value();
+            return stream.filter((bank) -> bank.getAccountPermissions(playerId).contains(permission));
+        });
+    }
+
     public static @NotNull PlayerBankArgument banksWithPermission(String id, BankPermission permission, Function<CommandSender, ArgumentException> notPlayer) {
-        return banksWithPermission(id, new ParseCommandArgument<UUID>() {
+        return banksWithPermission(id, new ParseCommandArgument<>() {
             @Override
             public @NotNull CommandArgumentResult<UUID> parse(@NotNull CommandContext context, @NotNull ArgumentContext argument) throws ArgumentException {
                 if (context.getSource() instanceof OfflinePlayer player) {
@@ -103,13 +120,7 @@ public class PlayerBankArgument implements CommandArgument<PlayerBankAccount> {
             }
 
         }, permission);
-    }
 
-    public static @NotNull PlayerBankArgument banksWithPermission(String id, ParseCommandArgument<UUID> playerIdGetter, BankPermission permission) {
-        return streamBank(id, (context, argument, stream) -> {
-            UUID playerId = playerIdGetter.parse(context, argument).value();
-            return stream.filter((bank) -> bank.getAccountPermissions(playerId).contains(permission));
-        });
     }
 
     @Deprecated(forRemoval = true)

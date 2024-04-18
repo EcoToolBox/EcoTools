@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.kaiaccount.account.eco.message.type.MessageArgumentType;
 import org.kaiaccount.account.inter.currency.Currency;
 
-public interface CurrencyMessageArgument extends MessageArgumentType<Currency<?>> {
+public interface CurrencyMessageArgumentType extends MessageArgumentType<Currency<?>> {
 
 	@NotNull
 	@Override

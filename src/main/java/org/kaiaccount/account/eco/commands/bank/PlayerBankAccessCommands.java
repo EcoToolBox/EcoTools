@@ -1,4 +1,4 @@
-package org.kaiaccount.account.eco.commands.bank.account;
+package org.kaiaccount.account.eco.commands.bank;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
