@@ -1,10 +1,8 @@
 package org.kaiaccount.account.eco;
 
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +21,6 @@ import org.mose.command.BukkitCommandWrapper;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -120,9 +117,6 @@ public class EcoToolPlugin extends JavaPlugin {
         registerCommand("bank", BukkitCommands.BANK);
         registerCommand("account", BukkitCommands.ACCOUNT);
         registerCommand("transactions", BukkitCommands.TRANSACTIONS);
-
-        Collection<RegisteredServiceProvider<Economy>> rsp = getServer().getServicesManager().getRegistrations(Economy.class);
-        getLogger().warning("Economy found: " + rsp.size());
 
     }
 

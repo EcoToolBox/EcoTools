@@ -57,7 +57,9 @@ public class AccountArgument<A extends Account> implements CommandArgument<A> {
             if (!arg.getId().equalsIgnoreCase(peek)) {
                 continue;
             }
-            CommandArgumentResult<? extends A> result = arg.parse(context, argument);
+
+            ArgumentContext nextArgument = new ArgumentContext(argument.getArgumentIndex() + 1, context.getCommand());
+            CommandArgumentResult<? extends A> result = arg.parse(context, nextArgument);
             return new CommandArgumentResult<>(result.getPosition(), result.value());
         }
         throw new ArgumentException("Unknown account type of " + peek);
@@ -72,7 +74,9 @@ public class AccountArgument<A extends Account> implements CommandArgument<A> {
             return this.arguments.stream().map(CommandArgument::getId).filter(id -> id.toLowerCase().startsWith(peek)).collect(Collectors.toSet());
         }
         Optional<CommandArgument<? extends A>> opArgument = this.arguments.parallelStream().filter(arg -> arg.getId().equalsIgnoreCase(peek)).findAny();
-        return opArgument.map(commandArgument -> commandArgument.suggest(commandContext, argument)).orElse(Collections.emptyList());
+
+        ArgumentContext nextArgument = new ArgumentContext(argument.getArgumentIndex() + 1, commandContext.getCommand());
+        return opArgument.map(commandArgument -> commandArgument.suggest(commandContext, nextArgument)).orElse(Collections.emptyList());
     }
 
     public static AccountArgument<Account> allAccounts(String id) {

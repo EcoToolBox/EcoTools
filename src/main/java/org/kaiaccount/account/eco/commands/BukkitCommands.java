@@ -15,7 +15,7 @@ public final class BukkitCommands {
 
     public static final BukkitCommandWrapper ECOTOOLS = new BukkitCommandWrapper(Commands.INFO, Commands.GIVE_ECO, Commands.TAKE_ECO);
     public static final BukkitCommandWrapper EXCHANGE = new BukkitCommandWrapper(Commands.EXCHANGE);
-    public static final BukkitCommandWrapper PAY = new BukkitCommandWrapper(Commands.PAY_PLAYER, Commands.PAY_BANK, Commands.PAY_NAMED, Commands.PAY_FROM_ANY);
+    public static final BukkitCommandWrapper PAY = new BukkitCommandWrapper(Commands.PAY, Commands.PAY_FROM);
     public static final BukkitCommandWrapper BANK = new BukkitCommandWrapper(Commands.CREATE_PLAYER_BANK,
             Commands.CLOSE_PLAYER_BANK,
             Commands.GRANT_BANK_PERMISSION,

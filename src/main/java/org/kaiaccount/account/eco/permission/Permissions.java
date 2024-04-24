@@ -14,8 +14,8 @@ public enum Permissions {
     EXCHANGE_OTHER("eco.cmd.exchange.other", false),
     GIVE_ECO("eco.cmd.tools.give", false),
     TAKE_ECO("eco.cmd.tools.take", false),
-    PAY("eco.cmd.pay.self", true),
-    PAY_FROM("eco.cmd.pay.from", false),
+    PAY_SELF("eco.cmd.pay.self", true),
+    PAY_OTHER("eco.cmd.pay.from.self", false),
     CREATE_BANK_ACCOUNT_SELF("eco.cmd.create.player.bank.self", true),
     CREATE_BANK_ACCOUNT_OTHER("eco.cmd.create.player.bank.other", false),
     CREATE_NAMED_ACCOUNT("eco.cmd.create.named", true),
@@ -24,7 +24,6 @@ public enum Permissions {
     HISTORY_SELF("eco.cmd.transactions.self", true),
     HISTORY_OTHER("eco.cmd.transactions.other", false),
     DELETE_BANK_OTHER("eco.cmd.delete.player.bank.other", false);
-
 
     private final @NotNull String permissionNode;
     private final boolean onByDefault;

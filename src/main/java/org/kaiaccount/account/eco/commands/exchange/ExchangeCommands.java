@@ -36,7 +36,7 @@ import java.util.Arrays;
 
 public final class ExchangeCommands {
 
-    public ExchangeCommands(){
+    public ExchangeCommands() {
         throw new RuntimeException("No dont");
     }
 
@@ -52,7 +52,7 @@ public final class ExchangeCommands {
                     (context, argument) -> AccountInterface.getManager().getCurrencies().stream().filter(currency -> currency.getWorth().isPresent()).toList());
             return builder
                     .setPermissionNode(Permissions.EXCHANGE.getPermissionNode())
-                    .addArguments(targetAccountArgument, fromCurrencyArgument, amountArgument)
+                    .addArguments(targetAccountArgument, fromCurrencyArgument, toCurrencyArgument, amountArgument)
                     .setDescription("Transfer one currency to another")
                     .setExecutor((context, raw) -> {
                         Account account = context.getArgument(supplier, targetAccountArgument);
@@ -108,14 +108,14 @@ public final class ExchangeCommands {
     }
 
     private static CommandArgument<Account> targetAccountCommand(String id) {
-        CommandArgument<Account> allPlayerAccounts = new MappedArgumentWrapper<>(new UserArgument(id,
+        CommandArgument<Account> allPlayerAccounts = new MappedArgumentWrapper<>(new UserArgument("player",
                 (command, argument) -> Arrays.stream(Bukkit.getOfflinePlayers())), user -> AccountInterface.getManager().getPlayerAccount(user));
-        CommandArgument<PlayerBankAccount> allBankAccounts = PlayerBankArgument.allPlayerBanks(id);
-        NamedAccountArgument allNamedAccounts = new NamedAccountArgument(id);
+        CommandArgument<PlayerBankAccount> allBankAccounts = PlayerBankArgument.allPlayerBanks("bank");
+        NamedAccountArgument allNamedAccounts = new NamedAccountArgument("named");
 
         CommandArgument<Account> allAccounts = new AccountArgument<>(id, allBankAccounts, allNamedAccounts, allPlayerAccounts);
 
-        PlayerBankArgument selfBanks = PlayerBankArgument.banksWithAllPermissions(id, (command, argument) -> {
+        PlayerBankArgument selfBanks = PlayerBankArgument.banksWithAllPermissions("bank", (command, argument) -> {
             if (command.getSource() instanceof OfflinePlayer player) {
                 return CommandArgumentResult.from(argument, player.getUniqueId());
             }
